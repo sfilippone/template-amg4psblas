@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,11 +35,11 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@ilu0_fact.f90
+! File: amg_@X@ilu0_fact.f90
 !
-! Subroutine: mld_@X@ilu0_fact
+! Subroutine: amg_@X@ilu0_fact
 ! Version:    @TYPE@
-! Contains:   mld_@X@ilu0_factint, ilu_copyin
+! Contains:   amg_@X@ilu0_factint, ilu_copyin
 !
 !  This routine computes either the ILU(0) or the MILU(0) factorization of
 !  the diagonal blocks of a distributed matrix. These factorizations are used
@@ -61,47 +61,47 @@
 !  u (U factor, except its diagonal) and d (diagonal of U).
 !
 !  This implementation of ILU(0)/MILU(0) is faster than the implementation in
-!  mld_ziluk_fct (the latter routine performs the more general ILU(k)/MILU(k)).
+!  amg_ziluk_fct (the latter routine performs the more general ILU(k)/MILU(k)).
 !  
 !
 ! Arguments:
 !    ialg    -  integer, input.
 !               The type of incomplete factorization to be performed.
-!               The MILU(0) factorization is computed if ialg = 2 (= mld_milu_n_);
+!               The MILU(0) factorization is computed if ialg = 2 (= amg_milu_n_);
 !               the ILU(0) factorization otherwise.
 !    a       -  type(psb_@X@spmat_type), input.
 !               The sparse matrix structure containing the local matrix.
 !               Note that if the 'base' Additive Schwarz preconditioner
 !               has overlap greater than 0 and the matrix has not been reordered
-!               (see mld_as_bld), then a contains only the 'original' local part
+!               (see amg_as_bld), then a contains only the 'original' local part
 !               of the distributed matrix, i.e. the rows of the matrix held
 !               by the calling process according to the initial data distribution.
 !    l       -  type(psb_@X@spmat_type), input/output.
 !               The L factor in the incomplete factorization.
-!               Note: its allocation is managed by the calling routine mld_ilu_bld,
+!               Note: its allocation is managed by the calling routine amg_ilu_bld,
 !               hence it cannot be only intent(out).
 !    u       -  type(psb_@X@spmat_type), input/output.
 !               The U factor (except its diagonal) in the incomplete factorization.
-!               Note: its allocation is managed by the calling routine mld_ilu_bld,
+!               Note: its allocation is managed by the calling routine amg_ilu_bld,
 !               hence it cannot be only intent(out).
 !    d       -  @TYPE@(@FKIND@), dimension(:), input/output.
 !               The inverse of the diagonal entries of the U factor in the incomplete
 !               factorization.
-!               Note: its allocation is managed by the calling routine mld_ilu_bld,
+!               Note: its allocation is managed by the calling routine amg_ilu_bld,
 !               hence it cannot be only intent(out).
 !    info    -  integer, output.                         
 !               Error code.
 !    blck    -  type(psb_@X@spmat_type), input, optional, target.
 !               The sparse matrix structure containing the remote rows of the
-!               distributed matrix, that have been retrieved by mld_as_bld
+!               distributed matrix, that have been retrieved by amg_as_bld
 !               to build an Additive Schwarz base preconditioner with overlap
 !               greater than 0. If the overlap is 0 or the matrix has been reordered
-!               (see mld_fact_bld), then blck is empty.
+!               (see amg_fact_bld), then blck is empty.
 !  
-subroutine mld_@X@ilu0_fact(ialg,a,l,u,d,info,blck, upd)
+subroutine amg_@X@ilu0_fact(ialg,a,l,u,d,info,blck, upd)
 
   use psb_base_mod
-  use mld_@X@_ilu_fact_mod, mld_protect_name => mld_@X@ilu0_fact
+  use amg_@X@_ilu_fact_mod, amg_protect_name => amg_@X@ilu0_fact
 
   implicit none
 
@@ -121,7 +121,7 @@ subroutine mld_@X@ilu0_fact(ialg,a,l,u,d,info,blck, upd)
   character                       :: upd_
   character(len=20)    :: name, ch_err
 
-  name='mld_@X@ilu0_fact'
+  name='amg_@X@ilu0_fact'
   info = psb_success_
   call psb_erractionsave(err_act)
 
@@ -160,11 +160,11 @@ subroutine mld_@X@ilu0_fact(ialg,a,l,u,d,info,blck, upd)
   !
   ! Compute the ILU(0) or the MILU(0) factorization, depending on ialg
   !
-  call mld_@X@ilu0_factint(ialg,a,blck_,&
+  call amg_@X@ilu0_factint(ialg,a,blck_,&
        & d,ll%val,ll%ja,ll%irp,uu%val,uu%ja,uu%irp,l1,l2,upd_,info)
   if(info.ne.0) then
     info=psb_err_from_subroutine_
-    ch_err='mld_@X@ilu0_factint'
+    ch_err='amg_@X@ilu0_factint'
     call psb_errpush(info,name,a_err=ch_err)
     goto 9999
   end if
@@ -207,9 +207,9 @@ subroutine mld_@X@ilu0_fact(ialg,a,l,u,d,info,blck, upd)
 contains
 
   !
-  ! Subroutine: mld_@X@ilu0_factint
+  ! Subroutine: amg_@X@ilu0_factint
   ! Version:    @TYPE@
-  ! Note: internal subroutine of mld_@X@ilu0_fact.
+  ! Note: internal subroutine of amg_@X@ilu0_fact.
   !
   !  This routine computes either the ILU(0) or the MILU(0) factorization of the 
   !  diagonal blocks of a distributed matrix. 
@@ -230,8 +230,8 @@ contains
   ! Arguments:
   !    ialg    -  integer, input.
   !               The type of incomplete factorization to be performed.
-  !               The ILU(0) factorization is computed if ialg = 1 (= mld_ilu_n_),
-  !               the MILU(0) one if ialg = 2 (= mld_milu_n_); other values
+  !               The ILU(0) factorization is computed if ialg = 1 (= amg_ilu_n_),
+  !               the MILU(0) one if ialg = 2 (= amg_milu_n_); other values
   !               are not allowed.
   !    m       -  integer, output.
   !               The total number of rows of the local matrix to be factorized,
@@ -242,17 +242,17 @@ contains
   !               The sparse matrix structure containing the local matrix.
   !               Note that, if the 'base' Additive Schwarz preconditioner
   !               has overlap greater than 0 and the matrix has not been reordered
-  !               (see mld_fact_bld), then a contains only the 'original' local part
+  !               (see amg_fact_bld), then a contains only the 'original' local part
   !               of the distributed matrix, i.e. the rows of the matrix held
   !               by the calling process according to the initial data distribution.
   !    mb      -  integer, input.
   !               The number of rows of the local submatrix stored into b.
   !    b       -  type(psb_@X@spmat_type), input.
   !               The sparse matrix structure containing the remote rows of the
-  !               distributed matrix, that have been retrieved by mld_as_bld
+  !               distributed matrix, that have been retrieved by amg_as_bld
   !               to build an Additive Schwarz base preconditioner with overlap
   !               greater than 0. If the overlap is 0 or the matrix has been
-  !               reordered (see mld_fact_bld), then b does not contain any row.
+  !               reordered (see amg_fact_bld), then b does not contain any row.
   !    d       -  @TYPE@(@FKIND@), dimension(:), output.
   !               The inverse of the diagonal entries of the U factor in the
   !               incomplete factorization.
@@ -281,7 +281,7 @@ contains
   !    info    -  integer, output.           
   !               Error code.
   !
-  subroutine mld_@X@ilu0_factint(ialg,a,b,&
+  subroutine amg_@X@ilu0_factint(ialg,a,b,&
        & d,lval,lja,lirp,uval,uja,uirp,l1,l2,upd,info)
 
     implicit none 
@@ -303,7 +303,7 @@ contains
     integer(psb_ipk_)   :: int_err(5) 
     character(len=20)   :: name, ch_err
 
-    name='mld_@X@ilu0_factint'
+    name='amg_@X@ilu0_factint'
     info=psb_success_
     call psb_erractionsave(err_act)
     if (psb_errstatus_fatal()) then
@@ -313,7 +313,7 @@ contains
     mb = b%get_nrows()
 
     select case(ialg)
-    case(mld_ilu_n_,mld_milu_n_)
+    case(amg_ilu_n_,amg_milu_n_)
       ! Ok 
     case default
       info=psb_err_input_asize_invalid_i_
@@ -427,7 +427,7 @@ contains
             ! that this entry does not match; thus we accumulate on the
             ! diagonal for MILU(0).
             !
-            if (ialg == mld_milu_n_) then 
+            if (ialg == amg_milu_n_) then 
               dia = dia - temp*uval(jj)
             end if
           enddo updateloop
@@ -476,12 +476,12 @@ contains
 
     return
 
-  end subroutine mld_@X@ilu0_factint
+  end subroutine amg_@X@ilu0_factint
 
   !
   ! Subroutine: ilu_copyin
   ! Version:    @TYPE@
-  ! Note: internal subroutine of mld_@X@ilu0_fact
+  ! Note: internal subroutine of amg_@X@ilu0_fact
   !
   !  This routine copies a row of a sparse matrix A, stored in the psb_@X@spmat_type 
   !  data structure a, into the arrays lval and uval and into the scalar variable
@@ -495,7 +495,7 @@ contains
   !  copied into lval, dia, uval row by row, through successive calls to
   !  ilu_copyin.
   !
-  !  The routine is used by mld_@X@ilu0_factint in the computation of the ILU(0)/MILU(0)
+  !  The routine is used by amg_@X@ilu0_factint in the computation of the ILU(0)/MILU(0)
   !  factorization of a local sparse matrix.
   !  
   !  TODO: modify the routine to allow copying into output L and U that are
@@ -523,7 +523,7 @@ contains
   !               Pointer to the last occupied entry of lval.
   !    lja    -  integer, dimension(:), input/output.
   !               The column indices of the nonzero entries of the lower triangle
-  !               copied in lval row by row (see mld_@X@ilu0_factint), according
+  !               copied in lval row by row (see amg_@X@ilu0_factint), according
   !               to the CSR storage format.
   !    lval   -  @TYPE@(@FKIND@), dimension(:), input/output.
   !               The array where the entries of the row corresponding to the
@@ -534,7 +534,7 @@ contains
   !               Pointer to the last occupied entry of uval.
   !    uja    -  integer, dimension(:), input/output.
   !               The column indices of the nonzero entries of the upper triangle
-  !               copied in uval row by row (see mld_@X@ilu0_factint), according
+  !               copied in uval row by row (see amg_@X@ilu0_factint), according
   !               to the CSR storage format.
   !    uval   -  @TYPE@(@FKIND@), dimension(:), input/output.
   !               The array where the entries of the row corresponding to the
@@ -663,4 +663,4 @@ contains
 
   end subroutine ilu_copyin
 
-end subroutine mld_@X@ilu0_fact
+end subroutine amg_@X@ilu0_fact

@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,11 +35,11 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-subroutine mld_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
+subroutine amg_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
   use psb_base_mod
-  use mld_@X@_onelev_mod, mld_protect_name => mld_@X@_base_onelev_build
+  use amg_@X@_onelev_mod, amg_protect_name => amg_@X@_base_onelev_build
   implicit none
-  class(mld_@X@_onelev_type), target, intent(inout) :: lv
+  class(amg_@X@_onelev_type), target, intent(inout) :: lv
   integer(psb_ipk_), intent(out) :: info
   class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
   class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
@@ -51,7 +51,7 @@ subroutine mld_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
   integer(psb_ipk_)  :: debug_level, debug_unit
   character(len=20)  :: name, ch_err
 
-  name = 'mld_onelev_build'
+  name = 'amg_onelev_build'
   info=psb_success_
   err=0
   call psb_erractionsave(err_act)
@@ -71,13 +71,13 @@ subroutine mld_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
   call psb_info(ictxt,me,np)
 
   if (.not.allocated(lv%sm)) then 
-    !! Error: should have called mld_dprecinit
+    !! Error: should have called amg_dprecinit
     info=3111
     call psb_errpush(info,name)
     goto 9999
   end if
   if (.not.allocated(lv%sm%sv)) then 
-    !! Error: should have called mld_dprecinit
+    !! Error: should have called amg_dprecinit
     info=3111
     call psb_errpush(info,name)
     goto 9999
@@ -85,9 +85,9 @@ subroutine mld_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
   lv%ac_nz_loc = lv%ac%get_nzeros()
   lv%ac_nz_tot = lv%ac_nz_loc
   select case(lv%parms%coarse_mat)
-  case(mld_distr_mat_) 
+  case(amg_distr_mat_) 
     call psb_sum(ictxt,lv%ac_nz_tot)
-  case(mld_repl_mat_)
+  case(amg_repl_mat_)
     ! Do nothing
   case default
     ! Should never get here
@@ -100,9 +100,9 @@ subroutine mld_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
   if (debug_level >= psb_debug_outer_) &
        & write(debug_unit,*) me,' ',trim(name),&
        & 'Calling mlprcbld at level  ',i
-  call mld_check_def(lv%parms%sweeps_pre,&
+  call amg_check_def(lv%parms%sweeps_pre,&
        & 'Jacobi sweeps',izero,is_int_non_negative)
-  call mld_check_def(lv%parms%sweeps_post,&
+  call amg_check_def(lv%parms%sweeps_post,&
        & 'Jacobi sweeps',izero,is_int_non_negative)
 
   call lv%sm%build(lv%base_a,lv%base_desc,info)
@@ -150,4 +150,4 @@ subroutine mld_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
 
   return
 
-end subroutine mld_@X@_base_onelev_build
+end subroutine amg_@X@_base_onelev_build

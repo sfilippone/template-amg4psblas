@@ -12,8 +12,8 @@ SRC=Xmlprec_bld.p90 Xmlprec_aply.p90 \
     Xprecinit.P90 Xprecset.P90 Xcprecset.P90 \
     X_extprol_bld.P90 X_hierarchy_bld.p90 X_smoothers_bld.p90 
 
-FSRC1=$(patsubst %.p90, %.f90, $(subst X, mld_$(ARITH), $(filter %.p90, $(SRC))))
-FSRC2=$(patsubst %.P90, %.F90, $(subst X, mld_$(ARITH), $(filter %.P90, $(SRC))))
+FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
+FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
 FOBJS1=$(FSRC1:.f90=.o)
 FOBJS2=$(FSRC2:.F90=.o)
@@ -68,9 +68,9 @@ cpy:
 	cd solver && $(MAKE) cpy
 
 
-$(FSRC1): mld_$(ARITH)%.f90 : X%.p90
+$(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../../$(ARITH).sed $< >$@
-$(FSRC2): mld_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
 	sed -f ../../$(ARITH).sed $< >$@
 
 aggrc:

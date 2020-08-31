@@ -1,15 +1,15 @@
 
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -19,14 +19,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -40,18 +40,18 @@
 !        Ambra Abdullahi Hassan 
 !
 !
-! File: mld_@X@_mumps_solver_mod.f90
+! File: amg_@X@_mumps_solver_mod.f90
 !
-! Module: mld_@X@_mumps_solver_mod
+! Module: amg_@X@_mumps_solver_mod
 !
 !  This module defines: 
-!  - the mld_@X@_mumps_solver_type data structure containing the ingredients
+!  - the amg_@X@_mumps_solver_type data structure containing the ingredients
 !    to interface with the MUMPS package. 
 !    1. The factorization can be either restricted to the diagonal block of the
 !       current image or distributed (and thus exact). 
 !
-module mld_@X@_mumps_solver
-  use mld_@X@_base_solver_mod
+module amg_@X@_mumps_solver
+  use amg_@X@_base_solver_mod
 #if defined(HAVE_MUMPS_) && defined(HAVE_MUMPS_MODULES_)
   use @X@mumps_struc_def
 #endif
@@ -60,25 +60,25 @@ module mld_@X@_mumps_solver
 #endif  
   
   
-  type :: mld_@X@_mumps_icntl_item
+  type :: amg_@X@_mumps_icntl_item
     integer(psb_ipk_), allocatable :: item
-  end type mld_@X@_mumps_icntl_item
-  type :: mld_@X@_mumps_rcntl_item
+  end type amg_@X@_mumps_icntl_item
+  type :: amg_@X@_mumps_rcntl_item
     real(@FKIND@), allocatable :: item
-  end type mld_@X@_mumps_rcntl_item
+  end type amg_@X@_mumps_rcntl_item
 
-  type, extends(mld_@X@_base_solver_type) :: mld_@X@_mumps_solver_type
+  type, extends(amg_@X@_base_solver_type) :: amg_@X@_mumps_solver_type
 #if defined(HAVE_MUMPS_)
     type(@X@mumps_struc), allocatable  :: id
 #else
     integer, allocatable :: id
 #endif
-    type(mld_@X@_mumps_icntl_item), allocatable :: icntl(:)
-    type(mld_@X@_mumps_rcntl_item), allocatable :: rcntl(:)
+    type(amg_@X@_mumps_icntl_item), allocatable :: icntl(:)
+    type(amg_@X@_mumps_rcntl_item), allocatable :: rcntl(:)
     !
     ! Controls to be set before MUMPS instantiation:
     !
-    ! IPAR(1) : MUMPS_LOC_GLOB   0==mld_local_solver_: LOCAL   1==mld_global_solver_: GLOBAL
+    ! IPAR(1) : MUMPS_LOC_GLOB   0==amg_local_solver_: LOCAL   1==amg_global_solver_: GLOBAL
     ! IPAR(2) : MUMPS_PRINT_ERR  print verbosity (see MUMPS)
     ! IPAR(3) : MUMPS_SYM        0: non-symmetric   2: symmetric
     integer(psb_ipk_), dimension(3) :: ipar
@@ -100,10 +100,8 @@ module mld_@X@_mumps_solver
     procedure, nopass   :: get_fmt => @X@_mumps_solver_get_fmt
     procedure, nopass   :: get_id  => @X@_mumps_solver_get_id
     procedure, pass(sv) :: is_global => @X@_mumps_solver_is_global
-#if defined(HAVE_FINAL) 
     final               :: @X@_mumps_solver_finalize
-#endif
-  end type mld_@X@_mumps_solver_type
+  end type amg_@X@_mumps_solver_type
 
 
   private :: @X@_mumps_solver_bld, @X@_mumps_solver_apply, &
@@ -114,18 +112,16 @@ module mld_@X@_mumps_solver
        &  @X@_mumps_solver_default, @X@_mumps_solver_get_fmt, &
        &  @X@_mumps_solver_clone_settings, &
        &  @X@_mumps_solver_get_id, @X@_mumps_solver_is_global
-#if defined(HAVE_FINAL) 
   private :: @X@_mumps_solver_finalize
-#endif
 
   interface 
     subroutine @X@_mumps_solver_apply_vect(alpha,sv,x,beta,y,desc_data,&
          & trans,work,wv,info,init,initu)
-      import :: psb_desc_type, mld_@X@_mumps_solver_type, psb_@X@_vect_type, psb_dpk_, psb_spk_, &
+      import :: psb_desc_type, amg_@X@_mumps_solver_type, psb_@X@_vect_type, psb_dpk_, psb_spk_, &
            & psb_@X@spmat_type, psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, psb_ipk_
       implicit none 
       type(psb_desc_type), intent(in)      :: desc_data
-      class(mld_@X@_mumps_solver_type), intent(inout) :: sv
+      class(amg_@X@_mumps_solver_type), intent(inout) :: sv
       type(psb_@X@_vect_type),intent(inout)  :: x
       type(psb_@X@_vect_type),intent(inout)  :: y
       @TYPE@(@FKIND@),intent(in)            :: alpha,beta
@@ -140,11 +136,11 @@ module mld_@X@_mumps_solver
 
   interface
     subroutine @X@_mumps_solver_apply(alpha,sv,x,beta,y,desc_data,trans,work,info,init,initu)
-      import :: psb_desc_type, mld_@X@_mumps_solver_type, psb_@X@_vect_type, psb_dpk_, psb_spk_, &
+      import :: psb_desc_type, amg_@X@_mumps_solver_type, psb_@X@_vect_type, psb_dpk_, psb_spk_, &
            & psb_@X@spmat_type, psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, psb_ipk_
       implicit none 
       type(psb_desc_type), intent(in)      :: desc_data
-      class(mld_@X@_mumps_solver_type), intent(inout) :: sv
+      class(amg_@X@_mumps_solver_type), intent(inout) :: sv
       @TYPE@(@FKIND@),intent(inout)         :: x(:)
       @TYPE@(@FKIND@),intent(inout)         :: y(:)
       @TYPE@(@FKIND@),intent(in)            :: alpha,beta
@@ -159,7 +155,7 @@ module mld_@X@_mumps_solver
   interface
     subroutine @X@_mumps_solver_bld(a,desc_a,sv,info,b,amold,vmold,imold)
 
-      import :: psb_desc_type, mld_@X@_mumps_solver_type, psb_@X@_vect_type, @FKIND@, &
+      import :: psb_desc_type, amg_@X@_mumps_solver_type, psb_@X@_vect_type, @FKIND@, &
            & psb_@X@spmat_type, psb_@X@_base_sparse_mat, psb_@X@_base_vect_type,&
            & psb_ipk_, psb_i_base_vect_type
 
@@ -168,7 +164,7 @@ module mld_@X@_mumps_solver
       ! Arguments
       type(psb_@X@spmat_type), intent(in), target           :: a
       Type(psb_desc_type), Intent(inout)                  :: desc_a 
-      class(mld_@X@_mumps_solver_type), intent(inout)       :: sv
+      class(amg_@X@_mumps_solver_type), intent(inout)       :: sv
       integer(psb_ipk_), intent(out)                      :: info
       type(psb_@X@spmat_type), intent(in), target, optional :: b
       class(psb_@X@_base_sparse_mat), intent(in), optional  :: amold
@@ -184,8 +180,8 @@ contains
     use psb_base_mod
     Implicit None
     ! Arguments
-    class(mld_@X@_mumps_solver_type), intent(inout) :: sv
-    class(mld_@X@_base_solver_type), intent(inout) :: svout
+    class(amg_@X@_mumps_solver_type), intent(inout) :: sv
+    class(amg_@X@_base_solver_type), intent(inout) :: svout
     integer(psb_ipk_), intent(out)                 :: info
     integer(psb_ipk_) :: k,err_act
     character(len=20) :: name='@X@_mumps_solver_clone_settings'
@@ -197,21 +193,21 @@ contains
     call psb_erractionsave(err_act)
 
     select type(svout)
-    class is(mld_@X@_mumps_solver_type)
+    class is(amg_@X@_mumps_solver_type)
       svout%ipar(:) = sv%ipar(:)
       svout%built = .false.
       if (allocated(svout%icntl)) deallocate(svout%icntl,stat=info)
-      if (info == 0) allocate(svout%icntl(mld_mumps_icntl_size),stat=info)
+      if (info == 0) allocate(svout%icntl(amg_mumps_icntl_size),stat=info)
       if (info == 0) then
-        do k=1,mld_mumps_icntl_size
+        do k=1,amg_mumps_icntl_size
           call psb_safe_ab_cpy(sv%icntl(k)%item,svout%icntl(k)%item,info)
         end do
       end if
       
       if (allocated(svout%rcntl)) deallocate(svout%rcntl,stat=info)
-      if (info == 0) allocate(svout%rcntl(mld_mumps_rcntl_size),stat=info)
+      if (info == 0) allocate(svout%rcntl(amg_mumps_rcntl_size),stat=info)
       if (info == 0) then
-        do k=1,mld_mumps_rcntl_size
+        do k=1,amg_mumps_rcntl_size
           call psb_safe_ab_cpy(sv%rcntl(k)%item,svout%rcntl(k)%item,info)
         end do
       end if
@@ -236,7 +232,7 @@ contains
     Implicit None
 
     ! Arguments
-    class(mld_@X@_mumps_solver_type), intent(inout) :: sv
+    class(amg_@X@_mumps_solver_type), intent(inout) :: sv
     integer(psb_ipk_), intent(out)                :: info
     Integer(psb_ipk_) :: err_act
     character(len=20)  :: name='@X@_mumps_solver_clear_data'
@@ -276,7 +272,7 @@ contains
     Implicit None
 
     ! Arguments
-    class(mld_@X@_mumps_solver_type), intent(inout) :: sv
+    class(amg_@X@_mumps_solver_type), intent(inout) :: sv
     integer(psb_ipk_), intent(out)                :: info
     Integer(psb_ipk_) :: err_act
     character(len=20)  :: name='@X@_mumps_solver_free'
@@ -301,13 +297,12 @@ contains
 #endif
   end subroutine @X@_mumps_solver_free
 
-#if defined(HAVE_FINAL)
 subroutine @X@_mumps_solver_finalize(sv)
 
   Implicit None
 
   ! Arguments
-  type(mld_@X@_mumps_solver_type), intent(inout) :: sv 
+  type(amg_@X@_mumps_solver_type), intent(inout) :: sv 
   integer(psb_ipk_) :: info
   Integer(psb_ipk_) :: err_act
   character(len=20) :: name='@X@_mumps_solver_finalize'
@@ -317,14 +312,13 @@ subroutine @X@_mumps_solver_finalize(sv)
   return
 
 end subroutine @X@_mumps_solver_finalize
-#endif
 
 subroutine @X@_mumps_solver_descr(sv,info,iout,coarse)
 
   Implicit None
 
   ! Arguments
-  class(mld_@X@_mumps_solver_type), intent(in) :: sv
+  class(amg_@X@_mumps_solver_type), intent(in) :: sv
   integer(psb_ipk_), intent(out)                     :: info
   integer(psb_ipk_), intent(in), optional            :: iout
   logical, intent(in), optional       :: coarse
@@ -332,7 +326,7 @@ subroutine @X@_mumps_solver_descr(sv,info,iout,coarse)
   ! Local variables
   integer(psb_ipk_)      :: err_act
   integer(psb_ipk_)      :: ictxt, me, np
-  character(len=20), parameter :: name='mld_z_mumps_solver_descr'
+  character(len=20), parameter :: name='amg_z_mumps_solver_descr'
   integer(psb_ipk_) :: iout_
 
   call psb_erractionsave(err_act)
@@ -367,7 +361,7 @@ subroutine @X@_mumps_solver_csetc(sv,what,val,info,idx)
   Implicit None
 
   ! Arguments
-  class(mld_@X@_mumps_solver_type), intent(inout) :: sv
+  class(amg_@X@_mumps_solver_type), intent(inout) :: sv
   character(len=*), intent(in)                  :: what
   character(len=*), intent(in)                  :: val
   integer(psb_ipk_), intent(out)                :: info
@@ -385,7 +379,7 @@ subroutine @X@_mumps_solver_csetc(sv,what,val,info,idx)
     sv%ipar(1) = sv%stringval(psb_toupper(trim(val)))
 #endif
   case default
-    call sv%mld_@X@_base_solver_type%set(what,val,info,idx=idx)
+    call sv%amg_@X@_base_solver_type%set(what,val,info,idx=idx)
   end select
 
   call psb_erractionrestore(err_act)
@@ -406,7 +400,7 @@ subroutine @X@_mumps_solver_cseti(sv,what,val,info,idx)
   Implicit None
 
   ! Arguments
-  class(mld_@X@_mumps_solver_type), intent(inout) :: sv
+  class(amg_@X@_mumps_solver_type), intent(inout) :: sv
   character(len=*), intent(in)                  :: what
   integer(psb_ipk_), intent(in)                 :: val
   integer(psb_ipk_), intent(out)                :: info
@@ -432,7 +426,7 @@ subroutine @X@_mumps_solver_cseti(sv,what,val,info,idx)
     end if
 #endif
   case default
-    call sv%mld_@X@_base_solver_type%set(what,val,info,idx=idx)
+    call sv%amg_@X@_base_solver_type%set(what,val,info,idx=idx)
   end select
 
   call psb_erractionrestore(err_act)
@@ -452,7 +446,7 @@ subroutine @X@_mumps_solver_csetr(sv,what,val,info,idx)
   Implicit None
 
   ! Arguments
-  class(mld_@X@_mumps_solver_type), intent(inout) :: sv
+  class(amg_@X@_mumps_solver_type), intent(inout) :: sv
   character(len=*), intent(in)                  :: what
   real(@FKIND@), intent(in)                 :: val
   integer(psb_ipk_), intent(out)                :: info
@@ -472,7 +466,7 @@ subroutine @X@_mumps_solver_csetr(sv,what,val,info,idx)
     end if
 #endif
   case default
-    call sv%mld_@X@_base_solver_type%set(what,val,info,idx=idx)
+    call sv%amg_@X@_base_solver_type%set(what,val,info,idx=idx)
   end select
 
   call psb_erractionrestore(err_act)
@@ -493,7 +487,7 @@ subroutine @X@_mumps_solver_default(sv)
   Implicit none
 
   !Argument
-  class(mld_@X@_mumps_solver_type),intent(inout) :: sv
+  class(amg_@X@_mumps_solver_type),intent(inout) :: sv
   integer(psb_ipk_) :: info
   integer(psb_ipk_)  :: err_act,ictx,icomm
   character(len=20)  :: name='@X@_mumps_default'
@@ -506,24 +500,24 @@ subroutine @X@_mumps_solver_default(sv)
     allocate(sv%id,stat=info)
     if (info /= psb_success_) then
       info=psb_err_alloc_dealloc_
-      call psb_errpush(info,name,a_err='mld_@X@mumps_default')
+      call psb_errpush(info,name,a_err='amg_@X@mumps_default')
       goto 9999
     end if
     sv%built=.false.
   end if
   if (.not.allocated(sv%icntl)) then
-    allocate(sv%icntl(mld_mumps_icntl_size),stat=info)
+    allocate(sv%icntl(amg_mumps_icntl_size),stat=info)
     if (info /= psb_success_) then
       info=psb_err_alloc_dealloc_
-      call psb_errpush(info,name,a_err='mld_@X@mumps_default')
+      call psb_errpush(info,name,a_err='amg_@X@mumps_default')
       goto 9999
     end if
   end if
   if (.not.allocated(sv%rcntl)) then
-    allocate(sv%rcntl(mld_mumps_rcntl_size),stat=info)
+    allocate(sv%rcntl(amg_mumps_rcntl_size),stat=info)
     if (info /= psb_success_) then
       info=psb_err_alloc_dealloc_
-      call psb_errpush(info,name,a_err='mld_@X@mumps_default')
+      call psb_errpush(info,name,a_err='amg_@X@mumps_default')
       goto 9999
     end if
   end if
@@ -532,7 +526,7 @@ subroutine @X@_mumps_solver_default(sv)
   ! sv%id%par=1
   ! call dmumps(sv%id)
   sv%ipar    = 0
-  sv%ipar(1) = mld_global_solver_
+  sv%ipar(1) = amg_global_solver_
   !sv%ipar(10)=6
   !sv%ipar(11)=0
   !sv%ipar(12)=6
@@ -555,7 +549,7 @@ function @X@_mumps_solver_sizeof(sv) result(val)
 
   implicit none 
   ! Arguments
-  class(mld_@X@_mumps_solver_type), intent(in) :: sv
+  class(amg_@X@_mumps_solver_type), intent(in) :: sv
   integer(psb_epk_) :: val
   integer             :: i
 #if defined(HAVE_MUMPS_)
@@ -580,17 +574,17 @@ function @X@_mumps_solver_get_id() result(val)
   implicit none 
   integer(psb_ipk_)  :: val
 
-  val = mld_mumps_
+  val = amg_mumps_
 end function @X@_mumps_solver_get_id
 
 
 function @X@_mumps_solver_is_global(sv) result(val)
   implicit none 
-  class(mld_@X@_mumps_solver_type), intent(in) :: sv
+  class(amg_@X@_mumps_solver_type), intent(in) :: sv
   logical  :: val
 
-  val =  (sv%ipar(1) == mld_global_solver_ )
+  val =  (sv%ipar(1) == amg_global_solver_ )
 end function @X@_mumps_solver_is_global
 
-end module mld_@X@_mumps_solver
+end module amg_@X@_mumps_solver
 

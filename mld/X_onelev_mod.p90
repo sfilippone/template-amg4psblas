@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,12 +35,12 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@_onelev_mod.f90
+! File: amg_@X@_onelev_mod.f90
 !
-! Module: mld_@X@_onelev_mod
+! Module: amg_@X@_onelev_mod
 !
 !  This module defines: 
-!  - the mld_@X@_onelev_type data structure containing one level
+!  - the amg_@X@_onelev_type data structure containing one level
 !    of a multilevel  preconditioner and related
 !    data structures;
 !
@@ -51,52 +51,52 @@
 !  - deallocating the preconditioner data structure.  
 !
 
-module mld_@X@_onelev_mod
+module amg_@X@_onelev_mod
 
-  use mld_base_prec_type
-  use mld_@X@_base_smoother_mod
-  use mld_@X@_dec_aggregator_mod
+  use amg_base_prec_type
+  use amg_@X@_base_smoother_mod
+  use amg_@X@_dec_aggregator_mod
   use psb_base_mod, only : psb_@X@spmat_type, psb_@X@_vect_type, &
        & psb_@X@_base_vect_type, psb_@LX@spmat_type,  psb_@X@linmap_type, @FKIND@, &
        & psb_ipk_, psb_epk_, psb_lpk_, psb_desc_type, psb_i_base_vect_type, &
        & psb_erractionsave, psb_error_handler
   !
   !
-  ! Type: mld_@X@onelev_type.
+  ! Type: amg_@X@onelev_type.
   !
   !  It is the data type containing the necessary items for the	current
   !  level (essentially, the smoother, the current-level matrix
   !  and the restriction and prolongation operators).
   !
-  !  type mld_@X@onelev_type
-  !    class(mld_@X@_base_smoother_type), allocatable   :: sm, sm2a
-  !    class(mld_@X@_base_smoother_type), pointer       :: sm2 => null()
-  !    class(mld_@X@mlprec_wrk_type), allocatable       :: wrk
-  !    class(mld_@X@_base_aggregator_type), allocatable :: aggr
-  !    type(mld_@RT@ml_parms)             :: parms 
+  !  type amg_@X@onelev_type
+  !    class(amg_@X@_base_smoother_type), allocatable   :: sm, sm2a
+  !    class(amg_@X@_base_smoother_type), pointer       :: sm2 => null()
+  !    class(amg_@X@mlprec_wrk_type), allocatable       :: wrk
+  !    class(amg_@X@_base_aggregator_type), allocatable :: aggr
+  !    type(amg_@RT@ml_parms)             :: parms 
   !    type(psb_@X@spmat_type)           :: ac
   !    type(psb_@X@esc_type)             :: desc_ac
   !    type(psb_@X@spmat_type), pointer  :: base_a    => null() 
   !    type(psb_desc_type), pointer    :: base_desc => null() 
   !    type(psb_@X@linmap_type)          :: map
-  !  end type mld_@X@onelev_type
+  !  end type amg_@X@onelev_type
   !
   !  Note that @RT@ denotes the kind of the real data type to be chosen
   !  according to single/double precision version of MLD2P4.
   !
-  !   sm,sm2a      -  class(mld_@X@_base_smoother_type), allocatable
+  !   sm,sm2a      -  class(amg_@X@_base_smoother_type), allocatable
   !                   The current level pre- and post-smooother.
-  !   sm2          -  class(mld_@X@_base_smoother_type), pointer
+  !   sm2          -  class(amg_@X@_base_smoother_type), pointer
   !                   The current level post-smooother; if sm2a is allocated
   !                   explicitly, then sm2 => sm2a, otherwise sm2 => sm.
-  !   wrk          -  class(mld_@X@mlprec_wrk_type), allocatable
+  !   wrk          -  class(amg_@X@mlprec_wrk_type), allocatable
   !                   Workspace for application of preconditioner; may be
   !                   pre-allocated to save time in the application within a
   !                   Krylov solver.
-  !   aggr         -  class(mld_@X@_base_aggregator_type), allocatable 
+  !   aggr         -  class(amg_@X@_base_aggregator_type), allocatable 
   !                   The aggregator object: holds the algorithmic choices and
   !                   (possibly) additional data for building the aggregation.
-  !   parms        -  type(mld_@RT@ml_parms)
+  !   parms        -  type(amg_@RT@ml_parms)
   !                   The parameters defining the multilevel strategy.
   !   ac           -  The local part of the current-level matrix, built by
   !                   coarsening the previous-level matrix.
@@ -138,7 +138,7 @@ module mld_@X@_onelev_mod
   !    mat_asb      -  Build the final (possibly smoothed) prolongator and coarse matrix. 
   !
   !  
-  type mld_@X@mlprec_wrk_type
+  type amg_@X@mlprec_wrk_type
     @TYPE@(@FKIND@), allocatable  :: tx(:), ty(:), x2l(:), y2l(:)
     type(psb_@X@_vect_type)  :: vtx, vty, vx2l, vy2l
     type(psb_@X@_vect_type), allocatable :: wv(:)
@@ -149,16 +149,16 @@ module mld_@X@_onelev_mod
     procedure, pass(wk) :: move_alloc => @X@_wrk_move_alloc
     procedure, pass(wk) :: cnv        => @X@_wrk_cnv
     procedure, pass(wk) :: sizeof     => @X@_wrk_sizeof    
-  end type mld_@X@mlprec_wrk_type
+  end type amg_@X@mlprec_wrk_type
   private :: @X@_wrk_alloc, @X@_wrk_free, &
        & @X@_wrk_clone, @X@_wrk_move_alloc, @X@_wrk_cnv, @X@_wrk_sizeof    
   
-  type mld_@X@_onelev_type
-    class(mld_@X@_base_smoother_type), allocatable   :: sm, sm2a
-    class(mld_@X@_base_smoother_type), pointer       :: sm2 => null()
-    class(mld_@X@mlprec_wrk_type), allocatable       :: wrk
-    class(mld_@X@_base_aggregator_type), allocatable :: aggr
-    type(mld_@RT@ml_parms)              :: parms 
+  type amg_@X@_onelev_type
+    class(amg_@X@_base_smoother_type), allocatable   :: sm, sm2a
+    class(amg_@X@_base_smoother_type), pointer       :: sm2 => null()
+    class(amg_@X@mlprec_wrk_type), allocatable       :: wrk
+    class(amg_@X@_base_aggregator_type), allocatable :: aggr
+    type(amg_@RT@ml_parms)              :: parms 
     type(psb_@X@spmat_type)            :: ac
     integer(psb_ipk_)                :: ac_nz_loc
     integer(psb_lpk_)                :: ac_nz_tot
@@ -170,38 +170,38 @@ module mld_@X@_onelev_mod
     @RTYPE@(@FKIND@)                     :: szratio
   contains
     procedure, pass(lv) :: bld_tprol   => @X@_base_onelev_bld_tprol
-    procedure, pass(lv) :: mat_asb     => mld_@X@_base_onelev_mat_asb
+    procedure, pass(lv) :: mat_asb     => amg_@X@_base_onelev_mat_asb
     procedure, pass(lv) :: update_aggr => @X@_base_onelev_update_aggr
-    procedure, pass(lv) :: bld     => mld_@X@_base_onelev_build
+    procedure, pass(lv) :: bld     => amg_@X@_base_onelev_build
     procedure, pass(lv) :: clone   => @X@_base_onelev_clone
-    procedure, pass(lv) :: cnv     => mld_@X@_base_onelev_cnv
-    procedure, pass(lv) :: descr   => mld_@X@_base_onelev_descr
+    procedure, pass(lv) :: cnv     => amg_@X@_base_onelev_cnv
+    procedure, pass(lv) :: descr   => amg_@X@_base_onelev_descr
     procedure, pass(lv) :: default => @X@_base_onelev_default
-    procedure, pass(lv) :: free    => mld_@X@_base_onelev_free
+    procedure, pass(lv) :: free    => amg_@X@_base_onelev_free
     procedure, pass(lv) :: nullify => @X@_base_onelev_nullify
-    procedure, pass(lv) :: check => mld_@X@_base_onelev_check
-    procedure, pass(lv) :: dump  => mld_@X@_base_onelev_dump
-    procedure, pass(lv) :: cseti => mld_@X@_base_onelev_cseti
-    procedure, pass(lv) :: csetr => mld_@X@_base_onelev_csetr
-    procedure, pass(lv) :: csetc => mld_@X@_base_onelev_csetc
-    procedure, pass(lv) :: setsm => mld_@X@_base_onelev_setsm
-    procedure, pass(lv) :: setsv => mld_@X@_base_onelev_setsv
-    procedure, pass(lv) :: setag => mld_@X@_base_onelev_setag
+    procedure, pass(lv) :: check => amg_@X@_base_onelev_check
+    procedure, pass(lv) :: dump  => amg_@X@_base_onelev_dump
+    procedure, pass(lv) :: cseti => amg_@X@_base_onelev_cseti
+    procedure, pass(lv) :: csetr => amg_@X@_base_onelev_csetr
+    procedure, pass(lv) :: csetc => amg_@X@_base_onelev_csetc
+    procedure, pass(lv) :: setsm => amg_@X@_base_onelev_setsm
+    procedure, pass(lv) :: setsv => amg_@X@_base_onelev_setsv
+    procedure, pass(lv) :: setag => amg_@X@_base_onelev_setag
     generic, public     :: set   => cseti, csetr, csetc, setsm, setsv, setag 
     procedure, pass(lv) :: sizeof => @X@_base_onelev_sizeof
     procedure, pass(lv) :: get_nzeros => @X@_base_onelev_get_nzeros
     procedure, pass(lv) :: get_wrksz => @X@_base_onelev_get_wrksize
     procedure, pass(lv) :: allocate_wrk   => @X@_base_onelev_allocate_wrk
     procedure, pass(lv) :: free_wrk       => @X@_base_onelev_free_wrk
-    procedure, nopass   :: stringval => mld_stringval
+    procedure, nopass   :: stringval => amg_stringval
     procedure, pass(lv) :: move_alloc => @X@_base_onelev_move_alloc
     
-  end type mld_@X@_onelev_type
+  end type amg_@X@_onelev_type
 
-  type mld_@X@_onelev_node
-    type(mld_@X@_onelev_type) :: item
-    type(mld_@X@_onelev_node), pointer :: prev=>null(), next=>null()
-  end type mld_@X@_onelev_node
+  type amg_@X@_onelev_node
+    type(amg_@X@_onelev_type) :: item
+    type(amg_@X@_onelev_node), pointer :: prev=>null(), next=>null()
+  end type amg_@X@_onelev_node
 
   private :: @X@_base_onelev_default, @X@_base_onelev_sizeof, &
        & @X@_base_onelev_nullify, @X@_base_onelev_get_nzeros, &
@@ -210,200 +210,200 @@ module mld_@X@_onelev_mod
        & @X@_base_onelev_free_wrk
 
   interface 
-    subroutine mld_@X@_base_onelev_mat_asb(lv,a,desc_a,ilaggr,nlaggr,t_prol,info)
+    subroutine amg_@X@_base_onelev_mat_asb(lv,a,desc_a,ilaggr,nlaggr,t_prol,info)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_, psb_@LX@spmat_type, psb_lpk_
-      import :: mld_@X@_onelev_type
+      import :: amg_@X@_onelev_type
       implicit none 
-      class(mld_@X@_onelev_type), intent(inout), target :: lv
+      class(amg_@X@_onelev_type), intent(inout), target :: lv
       type(psb_@X@spmat_type), intent(in) :: a
       type(psb_desc_type), intent(inout)  :: desc_a
       integer(psb_lpk_), intent(inout) :: ilaggr(:),nlaggr(:)
       type(psb_@LX@spmat_type), intent(inout)  :: t_prol
       integer(psb_ipk_), intent(out)      :: info
-    end subroutine mld_@X@_base_onelev_mat_asb
+    end subroutine amg_@X@_base_onelev_mat_asb
   end interface
 
   interface
-    subroutine mld_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
+    subroutine amg_@X@_base_onelev_build(lv,info,amold,vmold,imold,ilv)
       import :: psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, &
-           & psb_i_base_vect_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_i_base_vect_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       implicit none
-      class(mld_@X@_onelev_type), target, intent(inout) :: lv
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv
       integer(psb_ipk_), intent(out) :: info
       class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
       class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
       class(psb_i_base_vect_type), intent(in), optional  :: imold
       integer(psb_ipk_), intent(in), optional :: ilv
-    end subroutine mld_@X@_base_onelev_build
+    end subroutine amg_@X@_base_onelev_build
   end interface
 
   interface 
-    subroutine mld_@X@_base_onelev_descr(lv,il,nl,ilmin,info,iout)
+    subroutine amg_@X@_base_onelev_descr(lv,il,nl,ilmin,info,iout)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
-           & psb_@X@linmap_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       ! Arguments
-      class(mld_@X@_onelev_type), intent(in) :: lv
+      class(amg_@X@_onelev_type), intent(in) :: lv
       integer(psb_ipk_), intent(in)                 :: il,nl,ilmin
       integer(psb_ipk_), intent(out)                :: info
       integer(psb_ipk_), intent(in), optional       :: iout
-    end subroutine mld_@X@_base_onelev_descr
+    end subroutine amg_@X@_base_onelev_descr
   end interface
 
   interface 
-    subroutine mld_@X@_base_onelev_cnv(lv,info,amold,vmold,imold)
-      import :: mld_@X@_onelev_type, psb_@X@_base_vect_type, @FKIND@, &
+    subroutine amg_@X@_base_onelev_cnv(lv,info,amold,vmold,imold)
+      import :: amg_@X@_onelev_type, psb_@X@_base_vect_type, @FKIND@, &
            & psb_@X@_base_sparse_mat, psb_ipk_, psb_i_base_vect_type
       ! Arguments
-      class(mld_@X@_onelev_type), intent(inout)            :: lv 
+      class(amg_@X@_onelev_type), intent(inout)            :: lv 
       integer(psb_ipk_), intent(out)                     :: info
       class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
       class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
       class(psb_i_base_vect_type), intent(in), optional  :: imold
-    end subroutine mld_@X@_base_onelev_cnv
+    end subroutine amg_@X@_base_onelev_cnv
   end interface
    
 interface 
-    subroutine mld_@X@_base_onelev_free(lv,info)
+    subroutine amg_@X@_base_onelev_free(lv,info)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
-           & psb_@X@linmap_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       implicit none 
       
-      class(mld_@X@_onelev_type), intent(inout) :: lv
+      class(amg_@X@_onelev_type), intent(inout) :: lv
       integer(psb_ipk_), intent(out)                :: info
-    end subroutine mld_@X@_base_onelev_free
+    end subroutine amg_@X@_base_onelev_free
   end interface
   
   interface 
-    subroutine mld_@X@_base_onelev_check(lv,info)
+    subroutine amg_@X@_base_onelev_check(lv,info)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
-           & psb_@X@linmap_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       ! Arguments
-      class(mld_@X@_onelev_type), intent(inout) :: lv 
+      class(amg_@X@_onelev_type), intent(inout) :: lv 
       integer(psb_ipk_), intent(out)            :: info
-    end subroutine mld_@X@_base_onelev_check
+    end subroutine amg_@X@_base_onelev_check
   end interface
   
   interface 
-    subroutine mld_@X@_base_onelev_setsm(lv,val,info,pos)
-      import :: @FKIND@, mld_@X@_onelev_type, mld_@X@_base_smoother_type, &
+    subroutine amg_@X@_base_onelev_setsm(lv,val,info,pos)
+      import :: @FKIND@, amg_@X@_onelev_type, amg_@X@_base_smoother_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       
       ! Arguments
-      class(mld_@X@_onelev_type), target, intent(inout) :: lv 
-      class(mld_@X@_base_smoother_type), intent(in)     :: val
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv 
+      class(amg_@X@_base_smoother_type), intent(in)     :: val
       integer(psb_ipk_), intent(out)                  :: info
       character(len=*), optional, intent(in)          :: pos
-    end subroutine mld_@X@_base_onelev_setsm
+    end subroutine amg_@X@_base_onelev_setsm
   end interface
   
   interface 
-    subroutine mld_@X@_base_onelev_setsv(lv,val,info,pos)
-      import :: @FKIND@, mld_@X@_onelev_type, mld_@X@_base_solver_type, &
+    subroutine amg_@X@_base_onelev_setsv(lv,val,info,pos)
+      import :: @FKIND@, amg_@X@_onelev_type, amg_@X@_base_solver_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       
       ! Arguments
-      class(mld_@X@_onelev_type), target, intent(inout) :: lv 
-      class(mld_@X@_base_solver_type), intent(in)       :: val
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv 
+      class(amg_@X@_base_solver_type), intent(in)       :: val
       integer(psb_ipk_), intent(out)                  :: info
       character(len=*), optional, intent(in)          :: pos
-    end subroutine mld_@X@_base_onelev_setsv
+    end subroutine amg_@X@_base_onelev_setsv
   end interface
   
   interface 
-    subroutine mld_@X@_base_onelev_setag(lv,val,info,pos)
-      import :: @FKIND@, mld_@X@_onelev_type, mld_@X@_base_aggregator_type, &
+    subroutine amg_@X@_base_onelev_setag(lv,val,info,pos)
+      import :: @FKIND@, amg_@X@_onelev_type, amg_@X@_base_aggregator_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       
       ! Arguments
-      class(mld_@X@_onelev_type), target, intent(inout) :: lv 
-      class(mld_@X@_base_aggregator_type), intent(in)       :: val
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv 
+      class(amg_@X@_base_aggregator_type), intent(in)       :: val
       integer(psb_ipk_), intent(out)                  :: info
       character(len=*), optional, intent(in)          :: pos
-    end subroutine mld_@X@_base_onelev_setag
+    end subroutine amg_@X@_base_onelev_setag
   end interface
   
   interface 
-    subroutine mld_@X@_base_onelev_cseti(lv,what,val,info,pos,idx)
+    subroutine amg_@X@_base_onelev_cseti(lv,what,val,info,pos,idx)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
-           & psb_@X@linmap_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       
       ! Arguments
-      class(mld_@X@_onelev_type), intent(inout) :: lv 
+      class(amg_@X@_onelev_type), intent(inout) :: lv 
       character(len=*), intent(in)              :: what 
       integer(psb_ipk_), intent(in)             :: val
       integer(psb_ipk_), intent(out)            :: info
       character(len=*), optional, intent(in)      :: pos
     integer(psb_ipk_), intent(in), optional       :: idx
-    end subroutine mld_@X@_base_onelev_cseti
+    end subroutine amg_@X@_base_onelev_cseti
   end interface
   
   interface 
-    subroutine mld_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
+    subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
-           & psb_@X@linmap_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       ! Arguments
-      class(mld_@X@_onelev_type), intent(inout) :: lv 
+      class(amg_@X@_onelev_type), intent(inout) :: lv 
       character(len=*), intent(in)              :: what 
       character(len=*), intent(in)              :: val
       integer(psb_ipk_), intent(out)            :: info
       character(len=*), optional, intent(in)      :: pos
     integer(psb_ipk_), intent(in), optional       :: idx
-    end subroutine mld_@X@_base_onelev_csetc
+    end subroutine amg_@X@_base_onelev_csetc
   end interface
   
   interface 
-    subroutine mld_@X@_base_onelev_csetr(lv,what,val,info,pos,idx)
+    subroutine amg_@X@_base_onelev_csetr(lv,what,val,info,pos,idx)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
-           & psb_@X@linmap_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       Implicit None
       
-      class(mld_@X@_onelev_type), intent(inout) :: lv 
+      class(amg_@X@_onelev_type), intent(inout) :: lv 
       character(len=*), intent(in)              :: what 
       @RTYPE@(@FKIND@), intent(in)                 :: val
       integer(psb_ipk_), intent(out)            :: info
       character(len=*), optional, intent(in)      :: pos
       integer(psb_ipk_), intent(in), optional     :: idx
-    end subroutine mld_@X@_base_onelev_csetr
+    end subroutine amg_@X@_base_onelev_csetr
   end interface
 
   interface 
-    subroutine mld_@X@_base_onelev_dump(lv,level,info,prefix,head,ac,rp,smoother,&
+    subroutine amg_@X@_base_onelev_dump(lv,level,info,prefix,head,ac,rp,smoother,&
          & solver,tprol,global_num)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
-           & psb_@X@linmap_type, @FKIND@, mld_@X@_onelev_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
       implicit none 
-      class(mld_@X@_onelev_type), intent(in) :: lv
+      class(amg_@X@_onelev_type), intent(in) :: lv
       integer(psb_ipk_), intent(in)          :: level
       integer(psb_ipk_), intent(out)         :: info
       character(len=*), intent(in), optional :: prefix, head
       logical, optional, intent(in)    :: ac, rp, smoother, solver, tprol, global_num
-    end subroutine mld_@X@_base_onelev_dump
+    end subroutine amg_@X@_base_onelev_dump
   end interface
   
 contains
   !
-  ! Function returning the size of the mld_prec_type data structure
+  ! Function returning the size of the amg_prec_type data structure
   ! in bytes or in number of nonzeros of the operator(s) involved. 
   !
 
   function @X@_base_onelev_get_nzeros(lv) result(val)
     implicit none 
-    class(mld_@X@_onelev_type), intent(in) :: lv
+    class(amg_@X@_onelev_type), intent(in) :: lv
     integer(psb_epk_) :: val
     integer(psb_ipk_)        :: i
     val = 0
@@ -415,7 +415,7 @@ contains
 
   function @X@_base_onelev_sizeof(lv) result(val)
     implicit none 
-    class(mld_@X@_onelev_type), intent(in) :: lv
+    class(amg_@X@_onelev_type), intent(in) :: lv
     integer(psb_epk_) :: val
     integer(psb_ipk_)        :: i
     
@@ -434,7 +434,7 @@ contains
   subroutine @X@_base_onelev_nullify(lv)
     implicit none 
 
-    class(mld_@X@_onelev_type), intent(inout) :: lv
+    class(amg_@X@_onelev_type), intent(inout) :: lv
 
     nullify(lv%base_a) 
     nullify(lv%base_desc) 
@@ -456,20 +456,20 @@ contains
     Implicit None
  
     ! Arguments
-    class(mld_@X@_onelev_type), target, intent(inout) :: lv
+    class(amg_@X@_onelev_type), target, intent(inout) :: lv
     integer(psb_ipk_) :: info 
 
     lv%parms%sweeps_pre      = 1
     lv%parms%sweeps_post     = 1
-    lv%parms%ml_cycle        = mld_vcycle_ml_
-    lv%parms%aggr_type       = mld_soc1_
-    lv%parms%par_aggr_alg    = mld_dec_aggr_
-    lv%parms%aggr_ord        = mld_aggr_ord_nat_
-    lv%parms%aggr_prol       = mld_smooth_prol_
-    lv%parms%coarse_mat      = mld_distr_mat_
-    lv%parms%aggr_omega_alg  = mld_eig_est_
-    lv%parms%aggr_eig        = mld_max_norm_
-    lv%parms%aggr_filter     = mld_no_filter_mat_
+    lv%parms%ml_cycle        = amg_vcycle_ml_
+    lv%parms%aggr_type       = amg_soc1_
+    lv%parms%par_aggr_alg    = amg_dec_aggr_
+    lv%parms%aggr_ord        = amg_aggr_ord_nat_
+    lv%parms%aggr_prol       = amg_smooth_prol_
+    lv%parms%coarse_mat      = amg_distr_mat_
+    lv%parms%aggr_omega_alg  = amg_eig_est_
+    lv%parms%aggr_eig        = amg_max_norm_
+    lv%parms%aggr_filter     = amg_no_filter_mat_
     lv%parms%aggr_omega_val  = @RZERO@
     lv%parms%aggr_thresh     = 0.01_@FKIND@
     
@@ -480,7 +480,7 @@ contains
     else
       lv%sm2 => lv%sm
     end if
-    if (.not.allocated(lv%aggr)) allocate(mld_@X@_dec_aggregator_type :: lv%aggr,stat=info)
+    if (.not.allocated(lv%aggr)) allocate(amg_@X@_dec_aggregator_type :: lv%aggr,stat=info)
     if (allocated(lv%aggr)) call lv%aggr%default()
     
     return
@@ -490,12 +490,12 @@ contains
   subroutine  @X@_base_onelev_bld_tprol(lv,a,desc_a,&
        & ilaggr,nlaggr,t_prol,ag_data,info)
     implicit none
-    class(mld_@X@_onelev_type), intent(inout), target :: lv
+    class(amg_@X@_onelev_type), intent(inout), target :: lv
     type(psb_@X@spmat_type), intent(inout)   :: a
     type(psb_desc_type), intent(inout)       :: desc_a
     integer(psb_lpk_), allocatable, intent(out) :: ilaggr(:),nlaggr(:)
     type(psb_@LX@spmat_type), intent(out)  :: t_prol
-    type(mld_@RT@aggr_data), intent(in)    :: ag_data
+    type(amg_@RT@aggr_data), intent(in)    :: ag_data
     integer(psb_ipk_), intent(out)      :: info
     
     call lv%aggr%bld_tprol(lv%parms,ag_data,a,desc_a,ilaggr,nlaggr,t_prol,info)
@@ -505,7 +505,7 @@ contains
 
   subroutine  @X@_base_onelev_update_aggr(lv,lvnext,info)
     implicit none
-    class(mld_@X@_onelev_type), intent(inout), target :: lv, lvnext
+    class(amg_@X@_onelev_type), intent(inout), target :: lv, lvnext
     integer(psb_ipk_), intent(out)      :: info
 
     call lv%aggr%update_next(lvnext%aggr,info)
@@ -518,8 +518,8 @@ contains
     Implicit None
 
     ! Arguments
-    class(mld_@X@_onelev_type), target, intent(inout) :: lv 
-    class(mld_@X@_onelev_type), target, intent(inout) :: lvout
+    class(amg_@X@_onelev_type), target, intent(inout) :: lv 
+    class(amg_@X@_onelev_type), target, intent(inout) :: lvout
     integer(psb_ipk_), intent(out)                    :: info 
 
     info = psb_success_
@@ -564,7 +564,7 @@ contains
   subroutine @X@_base_onelev_move_alloc(lv, b,info)
     use psb_base_mod
     implicit none
-    class(mld_@X@_onelev_type), target, intent(inout) :: lv, b
+    class(amg_@X@_onelev_type), target, intent(inout) :: lv, b
     integer(psb_ipk_), intent(out) :: info 
     
     call b%free(info)
@@ -593,7 +593,7 @@ contains
   
   function @X@_base_onelev_get_wrksize(lv) result(val)
     implicit none 
-    class(mld_@X@_onelev_type), intent(inout) :: lv
+    class(amg_@X@_onelev_type), intent(inout) :: lv
     integer(psb_ipk_)  :: val
 
     val = 0
@@ -611,10 +611,10 @@ contains
     ! additions for specific ML/cycles
     !
     select case(lv%parms%ml_cycle)
-    case(mld_add_ml_,mld_mult_ml_,mld_vcycle_ml_, mld_wcycle_ml_)
+    case(amg_add_ml_,amg_mult_ml_,amg_vcycle_ml_, amg_wcycle_ml_)
       ! We're good
       
-    case(mld_kcycle_ml_, mld_kcyclesym_ml_)
+    case(amg_kcycle_ml_, amg_kcyclesym_ml_)
       !
       ! We need 7 in inneritkcycle.
       !  Can we reuse vtx? 
@@ -631,7 +631,7 @@ contains
   subroutine @X@_base_onelev_allocate_wrk(lv,info,vmold)
     use psb_base_mod
     implicit none
-    class(mld_@X@_onelev_type), target, intent(inout) :: lv
+    class(amg_@X@_onelev_type), target, intent(inout) :: lv
     integer(psb_ipk_), intent(out) :: info 
     class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
     !
@@ -647,7 +647,7 @@ contains
   subroutine @X@_base_onelev_free_wrk(lv,info)
     use psb_base_mod
     implicit none
-    class(mld_@X@_onelev_type), target, intent(inout) :: lv
+    class(amg_@X@_onelev_type), target, intent(inout) :: lv
     integer(psb_ipk_), intent(out) :: info 
     !
     integer(psb_ipk_) :: nwv,i 
@@ -665,7 +665,7 @@ contains
     Implicit None
     
     ! Arguments
-    class(mld_@X@mlprec_wrk_type), target, intent(inout) :: wk
+    class(amg_@X@mlprec_wrk_type), target, intent(inout) :: wk
     integer(psb_ipk_), intent(in)                     :: nwv
     type(psb_desc_type), intent(in)                   :: desc
     integer(psb_ipk_), intent(out)                    :: info 
@@ -696,7 +696,7 @@ contains
     Implicit None
 
     ! Arguments
-    class(mld_@X@mlprec_wrk_type), target, intent(inout) :: wk
+    class(amg_@X@mlprec_wrk_type), target, intent(inout) :: wk
     integer(psb_ipk_), intent(out)                    :: info 
     !
     integer(psb_ipk_) :: i
@@ -724,8 +724,8 @@ contains
     Implicit None
 
     ! Arguments
-    class(mld_@X@mlprec_wrk_type), target, intent(inout) :: wk
-    class(mld_@X@mlprec_wrk_type), target, intent(inout) :: wkout
+    class(amg_@X@mlprec_wrk_type), target, intent(inout) :: wk
+    class(amg_@X@mlprec_wrk_type), target, intent(inout) :: wkout
     integer(psb_ipk_), intent(out)                    :: info 
     !
     integer(psb_ipk_) :: i
@@ -755,7 +755,7 @@ contains
   
   subroutine @X@_wrk_move_alloc(wk, b,info)
     implicit none
-    class(mld_@X@mlprec_wrk_type), target, intent(inout) :: wk, b
+    class(amg_@X@mlprec_wrk_type), target, intent(inout) :: wk, b
     integer(psb_ipk_), intent(out) :: info 
     
     call b%free(info)
@@ -779,7 +779,7 @@ contains
     Implicit None
     
     ! Arguments
-    class(mld_@X@mlprec_wrk_type), target, intent(inout) :: wk
+    class(amg_@X@mlprec_wrk_type), target, intent(inout) :: wk
     integer(psb_ipk_), intent(out)                    :: info 
     class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
     !
@@ -802,7 +802,7 @@ contains
   function @X@_wrk_sizeof(wk) result(val)
     use psb_realloc_mod
     implicit none 
-    class(mld_@X@mlprec_wrk_type), intent(in) :: wk
+    class(amg_@X@mlprec_wrk_type), intent(in) :: wk
     integer(psb_epk_) :: val
     integer :: i
     val = 0
@@ -821,4 +821,4 @@ contains
     end if
   end function @X@_wrk_sizeof
  
-end module mld_@X@_onelev_mod
+end module amg_@X@_onelev_mod

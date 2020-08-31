@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -42,56 +42,56 @@
 !  only because it works on (the pattern of)  A+A^T  instead of A. 
 !
 !    
-module mld_@X@_symdec_aggregator_mod
+module amg_@X@_symdec_aggregator_mod
 
-  use mld_@X@_dec_aggregator_mod
-  !> \namespace  mld_@X@_symdec_aggregator_mod  \class  mld_@X@_symdec_aggregator_type
-  !! \extends mld_@X@_dec_aggregator_mod::mld_@X@_dec_aggregator_type
+  use amg_@X@_dec_aggregator_mod
+  !> \namespace  amg_@X@_symdec_aggregator_mod  \class  amg_@X@_symdec_aggregator_type
+  !! \extends amg_@X@_dec_aggregator_mod::amg_@X@_dec_aggregator_type
   !!
   !!  This version differs from the basic decoupled aggregation algorithm
   !!   only because it works on (the pattern of)  A+A^T  instead of A.
   !!   
   !
-  type, extends(mld_@X@_dec_aggregator_type) :: mld_@X@_symdec_aggregator_type
+  type, extends(amg_@X@_dec_aggregator_type) :: amg_@X@_symdec_aggregator_type
     
   contains
-    procedure, pass(ag) :: bld_tprol    => mld_@X@_symdec_aggregator_build_tprol
-    procedure, pass(ag) :: descr        => mld_@X@_symdec_aggregator_descr
-    procedure, nopass   :: fmt          => mld_@X@_symdec_aggregator_fmt
-  end type mld_@X@_symdec_aggregator_type
+    procedure, pass(ag) :: bld_tprol    => amg_@X@_symdec_aggregator_build_tprol
+    procedure, pass(ag) :: descr        => amg_@X@_symdec_aggregator_descr
+    procedure, nopass   :: fmt          => amg_@X@_symdec_aggregator_fmt
+  end type amg_@X@_symdec_aggregator_type
 
 
   interface
-    subroutine  mld_@X@_symdec_aggregator_build_tprol(ag,parms,ag_data,&
+    subroutine  amg_@X@_symdec_aggregator_build_tprol(ag,parms,ag_data,&
          & a,desc_a,ilaggr,nlaggr,t_prol,info)
-      import :: mld_@X@_symdec_aggregator_type, psb_desc_type, psb_@X@spmat_type, @FKIND@,  &
-           & psb_ipk_, psb_lpk_,  psb_@LX@spmat_type, mld_@RT@ml_parms, mld_@RT@aggr_data
+      import :: amg_@X@_symdec_aggregator_type, psb_desc_type, psb_@X@spmat_type, @FKIND@,  &
+           & psb_ipk_, psb_lpk_,  psb_@LX@spmat_type, amg_@RT@ml_parms, amg_@RT@aggr_data
       implicit none
-      class(mld_@X@_symdec_aggregator_type), target, intent(inout) :: ag
-      type(mld_@RT@ml_parms), intent(inout)  :: parms 
-      type(mld_@RT@aggr_data), intent(in)    :: ag_data
+      class(amg_@X@_symdec_aggregator_type), target, intent(inout) :: ag
+      type(amg_@RT@ml_parms), intent(inout)  :: parms 
+      type(amg_@RT@aggr_data), intent(in)    :: ag_data
       type(psb_@X@spmat_type), intent(inout) :: a
       type(psb_desc_type), intent(inout)     :: desc_a
       integer(psb_lpk_), allocatable, intent(out) :: ilaggr(:),nlaggr(:)
       type(psb_@LX@spmat_type), intent(out)  :: t_prol
       integer(psb_ipk_), intent(out)      :: info
-    end subroutine mld_@X@_symdec_aggregator_build_tprol
+    end subroutine amg_@X@_symdec_aggregator_build_tprol
   end interface
 
 
 contains
 
-  function mld_@X@_symdec_aggregator_fmt() result(val)
+  function amg_@X@_symdec_aggregator_fmt() result(val)
     implicit none 
     character(len=32)  :: val
 
     val = "Symmetric Decoupled aggregation"
-  end function mld_@X@_symdec_aggregator_fmt
+  end function amg_@X@_symdec_aggregator_fmt
   
-  subroutine  mld_@X@_symdec_aggregator_descr(ag,parms,iout,info)
+  subroutine  amg_@X@_symdec_aggregator_descr(ag,parms,iout,info)
     implicit none 
-    class(mld_@X@_symdec_aggregator_type), intent(in) :: ag
-    type(mld_@RT@ml_parms), intent(in)   :: parms
+    class(amg_@X@_symdec_aggregator_type), intent(in) :: ag
+    type(amg_@RT@ml_parms), intent(in)   :: parms
     integer(psb_ipk_), intent(in)  :: iout
     integer(psb_ipk_), intent(out) :: info
 
@@ -100,6 +100,6 @@ contains
     call parms%mldescr(iout,info)
     
     return
-  end subroutine mld_@X@_symdec_aggregator_descr
+  end subroutine amg_@X@_symdec_aggregator_descr
 
-end module mld_@X@_symdec_aggregator_mod
+end module amg_@X@_symdec_aggregator_mod

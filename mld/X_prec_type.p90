@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,12 +35,12 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@_prec_type.f90
+! File: amg_@X@_prec_type.f90
 !
-! Module: mld_@X@_prec_type
+! Module: amg_@X@_prec_type
 !
 !  This module defines: 
-!  - the mld_@X@_prec_type data structure containing the preconditioner and related
+!  - the amg_@X@_prec_type data structure containing the preconditioner and related
 !    data structures;
 !
 !  It contains routines for
@@ -50,30 +50,30 @@
 !  - deallocating the preconditioner data structure.  
 !
 
-module mld_@X@_prec_type
+module amg_@X@_prec_type
 
-  use mld_base_prec_type
-  use mld_@X@_base_solver_mod
-  use mld_@X@_base_smoother_mod
-  use mld_@X@_base_aggregator_mod
-  use mld_@X@_onelev_mod
+  use amg_base_prec_type
+  use amg_@X@_base_solver_mod
+  use amg_@X@_base_smoother_mod
+  use amg_@X@_base_aggregator_mod
+  use amg_@X@_onelev_mod
   use psb_base_mod, only : psb_erractionsave, psb_erractionrestore, psb_errstatus_fatal
   use psb_prec_mod, only : psb_@X@prec_type
 
   !
-  ! Type: mld_@X@prec_type.
+  ! Type: amg_@X@prec_type.
   !
   !  This is the data type containing all the information about the multilevel
   !  preconditioner ('d', 's', 'c' and 'z', according to the real/complex,
   !  single/double precision version of  MLD2P4).
   !  It consists of an array of 'one-level' intermediate data structures
-  !  of type mld_@X@onelev_type, each containing the information needed to apply
+  !  of type amg_@X@onelev_type, each containing the information needed to apply
   !  the smoothing and the coarse-space correction at a generic level. RT is the
   !  real data type, i.e. S for both S and C, and D for both D and Z. 
   !
-  !  type mld_@X@prec_type
-  !    type(mld_@X@onelev_type), allocatable :: precv(:) 
-  !  end type mld_@X@prec_type
+  !  type amg_@X@prec_type
+  !    type(amg_@X@onelev_type), allocatable :: precv(:) 
+  !  end type amg_@X@prec_type
   ! 
   !  Note that the levels are numbered in increasing order starting from
   !  the level 1 as the finest one, and the number of levels is given by
@@ -84,9 +84,9 @@ module mld_@X@_prec_type
   !
   integer, parameter, private :: wv_size_=4
   
-  type, extends(psb_@X@prec_type)        :: mld_@X@prec_type
+  type, extends(psb_@X@prec_type)        :: amg_@X@prec_type
     ! integer(psb_ipk_)                  :: ictxt ! Now it's in the PSBLAS prec.
-    type(mld_@RT@aggr_data)                 :: ag_data
+    type(amg_@RT@aggr_data)                 :: ag_data
     !
     ! Number of outer sweeps. Sometimes  2 V-cycles may be better than 1 W-cycle. 
     !
@@ -101,46 +101,46 @@ module mld_@X@_prec_type
     !
     ! The multilevel hierarchy
     !
-    type(mld_@X@_onelev_type), allocatable :: precv(:) 
+    type(amg_@X@_onelev_type), allocatable :: precv(:) 
   contains
-    procedure, pass(prec)               :: psb_@X@_apply2_vect => mld_@X@_apply2_vect
-    procedure, pass(prec)               :: psb_@X@_apply1_vect => mld_@X@_apply1_vect
-    procedure, pass(prec)               :: psb_@X@_apply2v => mld_@X@_apply2v
-    procedure, pass(prec)               :: psb_@X@_apply1v => mld_@X@_apply1v
-    procedure, pass(prec)               :: dump           => mld_@X@_dump
-    procedure, pass(prec)               :: cnv            => mld_@X@_cnv
-    procedure, pass(prec)               :: clone          => mld_@X@_clone
-    procedure, pass(prec)               :: free           => mld_@X@_prec_free
-    procedure, pass(prec)               :: allocate_wrk   => mld_@X@_allocate_wrk
-    procedure, pass(prec)               :: free_wrk       => mld_@X@_free_wrk
-    procedure, pass(prec)               :: is_allocated_wrk => mld_@X@_is_allocated_wrk
-    procedure, pass(prec)               :: get_complexity => mld_@X@_get_compl
-    procedure, pass(prec)               :: cmp_complexity => mld_@X@_cmp_compl
-    procedure, pass(prec)               :: get_avg_cr => mld_@X@_get_avg_cr
-    procedure, pass(prec)               :: cmp_avg_cr => mld_@X@_cmp_avg_cr
-    procedure, pass(prec)               :: get_nlevs  => mld_@X@_get_nlevs
-    procedure, pass(prec)               :: get_nzeros => mld_@X@_get_nzeros
-    procedure, pass(prec)               :: sizeof => mld_@X@prec_sizeof
-    procedure, pass(prec)               :: setsm  => mld_@X@precsetsm
-    procedure, pass(prec)               :: setsv  => mld_@X@precsetsv
-    procedure, pass(prec)               :: setag  => mld_@X@precsetag
-    procedure, pass(prec)               :: cseti  => mld_@X@cprecseti
-    procedure, pass(prec)               :: csetc  => mld_@X@cprecsetc
-    procedure, pass(prec)               :: csetr  => mld_@X@cprecsetr
+    procedure, pass(prec)               :: psb_@X@_apply2_vect => amg_@X@_apply2_vect
+    procedure, pass(prec)               :: psb_@X@_apply1_vect => amg_@X@_apply1_vect
+    procedure, pass(prec)               :: psb_@X@_apply2v => amg_@X@_apply2v
+    procedure, pass(prec)               :: psb_@X@_apply1v => amg_@X@_apply1v
+    procedure, pass(prec)               :: dump           => amg_@X@_dump
+    procedure, pass(prec)               :: cnv            => amg_@X@_cnv
+    procedure, pass(prec)               :: clone          => amg_@X@_clone
+    procedure, pass(prec)               :: free           => amg_@X@_prec_free
+    procedure, pass(prec)               :: allocate_wrk   => amg_@X@_allocate_wrk
+    procedure, pass(prec)               :: free_wrk       => amg_@X@_free_wrk
+    procedure, pass(prec)               :: is_allocated_wrk => amg_@X@_is_allocated_wrk
+    procedure, pass(prec)               :: get_complexity => amg_@X@_get_compl
+    procedure, pass(prec)               :: cmp_complexity => amg_@X@_cmp_compl
+    procedure, pass(prec)               :: get_avg_cr => amg_@X@_get_avg_cr
+    procedure, pass(prec)               :: cmp_avg_cr => amg_@X@_cmp_avg_cr
+    procedure, pass(prec)               :: get_nlevs  => amg_@X@_get_nlevs
+    procedure, pass(prec)               :: get_nzeros => amg_@X@_get_nzeros
+    procedure, pass(prec)               :: sizeof => amg_@X@prec_sizeof
+    procedure, pass(prec)               :: setsm  => amg_@X@precsetsm
+    procedure, pass(prec)               :: setsv  => amg_@X@precsetsv
+    procedure, pass(prec)               :: setag  => amg_@X@precsetag
+    procedure, pass(prec)               :: cseti  => amg_@X@cprecseti
+    procedure, pass(prec)               :: csetc  => amg_@X@cprecsetc
+    procedure, pass(prec)               :: csetr  => amg_@X@cprecsetr
     generic, public                     :: set => cseti, csetc, csetr, setsm, setsv, setag 
-    procedure, pass(prec)               :: get_smoother => mld_@X@_get_smootherp
-    procedure, pass(prec)               :: get_solver   => mld_@X@_get_solverp
+    procedure, pass(prec)               :: get_smoother => amg_@X@_get_smootherp
+    procedure, pass(prec)               :: get_solver   => amg_@X@_get_solverp
     procedure, pass(prec)               :: move_alloc   => @X@_prec_move_alloc
-    procedure, pass(prec)               :: init         => mld_@X@precinit
-    procedure, pass(prec)               :: build        => mld_@X@precbld
-    procedure, pass(prec)               :: hierarchy_build  => mld_@X@_hierarchy_bld
-    procedure, pass(prec)               :: smoothers_build  => mld_@X@_smoothers_bld
-    procedure, pass(prec)               :: descr        =>  mld_@X@file_prec_descr
-  end type mld_@X@prec_type
+    procedure, pass(prec)               :: init         => amg_@X@precinit
+    procedure, pass(prec)               :: build        => amg_@X@precbld
+    procedure, pass(prec)               :: hierarchy_build  => amg_@X@_hierarchy_bld
+    procedure, pass(prec)               :: smoothers_build  => amg_@X@_smoothers_bld
+    procedure, pass(prec)               :: descr        =>  amg_@X@file_prec_descr
+  end type amg_@X@prec_type
 
-  private :: mld_@X@_dump, mld_@X@_get_compl,  mld_@X@_cmp_compl,&
-       & mld_@X@_get_avg_cr,  mld_@X@_cmp_avg_cr,&
-       & mld_@X@_get_nzeros, mld_@X@_get_nlevs, @X@_prec_move_alloc
+  private :: amg_@X@_dump, amg_@X@_get_compl,  amg_@X@_cmp_compl,&
+       & amg_@X@_get_avg_cr,  amg_@X@_cmp_avg_cr,&
+       & amg_@X@_get_nzeros, amg_@X@_get_nlevs, @X@_prec_move_alloc
 
 
   !
@@ -148,195 +148,195 @@ module mld_@X@_prec_type
   ! for printing its description and for deallocating its data structure
   !
 
-  interface mld_precfree
-    module procedure mld_@X@precfree
+  interface amg_precfree
+    module procedure amg_@X@precfree
   end interface
 
 
-  interface mld_precdescr
-    subroutine mld_@X@file_prec_descr(prec,iout,root)
-      import :: mld_@X@prec_type, psb_ipk_
+  interface amg_precdescr
+    subroutine amg_@X@file_prec_descr(prec,iout,root)
+      import :: amg_@X@prec_type, psb_ipk_
       implicit none 
       ! Arguments
-      class(mld_@X@prec_type), intent(in)      :: prec
+      class(amg_@X@prec_type), intent(in)      :: prec
       integer(psb_ipk_), intent(in), optional :: iout
       integer(psb_ipk_), intent(in), optional :: root
-    end subroutine mld_@X@file_prec_descr
+    end subroutine amg_@X@file_prec_descr
   end interface
 
-  interface mld_sizeof
-    module procedure mld_@X@prec_sizeof
+  interface amg_sizeof
+    module procedure amg_@X@prec_sizeof
   end interface
 
-  interface mld_precapply
-    subroutine mld_@X@precaply2_vect(prec,x,y,desc_data,info,trans,work)
+  interface amg_precapply
+    subroutine amg_@X@precaply2_vect(prec,x,y,desc_data,info,trans,work)
       import :: psb_@X@spmat_type, psb_desc_type, &
-           & @FKIND@, psb_@X@_vect_type, mld_@X@prec_type, psb_ipk_
+           & @FKIND@, psb_@X@_vect_type, amg_@X@prec_type, psb_ipk_
       type(psb_desc_type),intent(in)      :: desc_data
-      type(mld_@X@prec_type), intent(inout) :: prec
+      type(amg_@X@prec_type), intent(inout) :: prec
       type(psb_@X@_vect_type),intent(inout) :: x
       type(psb_@X@_vect_type),intent(inout) :: y
       integer(psb_ipk_), intent(out)                :: info
       character(len=1), optional          :: trans
       @TYPE@(@FKIND@),intent(inout), optional, target :: work(:)
-    end subroutine mld_@X@precaply2_vect
-    subroutine mld_@X@precaply1_vect(prec,x,desc_data,info,trans,work)
+    end subroutine amg_@X@precaply2_vect
+    subroutine amg_@X@precaply1_vect(prec,x,desc_data,info,trans,work)
       import :: psb_@X@spmat_type, psb_desc_type, &
-           & @FKIND@, psb_@X@_vect_type, mld_@X@prec_type, psb_ipk_
+           & @FKIND@, psb_@X@_vect_type, amg_@X@prec_type, psb_ipk_
       type(psb_desc_type),intent(in)      :: desc_data
-      type(mld_@X@prec_type), intent(inout) :: prec
+      type(amg_@X@prec_type), intent(inout) :: prec
       type(psb_@X@_vect_type),intent(inout) :: x
       integer(psb_ipk_), intent(out)                :: info
       character(len=1), optional          :: trans
       @TYPE@(@FKIND@),intent(inout), optional, target :: work(:)
-    end subroutine mld_@X@precaply1_vect
-    subroutine mld_@X@precaply(prec,x,y,desc_data,info,trans,work)
-      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, mld_@X@prec_type, psb_ipk_
+    end subroutine amg_@X@precaply1_vect
+    subroutine amg_@X@precaply(prec,x,y,desc_data,info,trans,work)
+      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, amg_@X@prec_type, psb_ipk_
       type(psb_desc_type),intent(in)   :: desc_data
-      type(mld_@X@prec_type), intent(inout) :: prec
+      type(amg_@X@prec_type), intent(inout) :: prec
       @TYPE@(@FKIND@),intent(inout)     :: x(:)
       @TYPE@(@FKIND@),intent(inout)     :: y(:)
       integer(psb_ipk_), intent(out)             :: info
       character(len=1), optional       :: trans
       @TYPE@(@FKIND@),intent(inout), optional, target :: work(:)
-    end subroutine mld_@X@precaply
-    subroutine mld_@X@precaply1(prec,x,desc_data,info,trans)
-      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, mld_@X@prec_type, psb_ipk_
+    end subroutine amg_@X@precaply
+    subroutine amg_@X@precaply1(prec,x,desc_data,info,trans)
+      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, amg_@X@prec_type, psb_ipk_
       type(psb_desc_type),intent(in)   :: desc_data
-      type(mld_@X@prec_type), intent(inout) :: prec
+      type(amg_@X@prec_type), intent(inout) :: prec
       @TYPE@(@FKIND@),intent(inout)     :: x(:)
       integer(psb_ipk_), intent(out)             :: info
       character(len=1), optional       :: trans
-    end subroutine mld_@X@precaply1
+    end subroutine amg_@X@precaply1
   end interface
 
   interface 
-    subroutine mld_@X@precsetsm(prec,val,info,ilev,ilmax,pos)
+    subroutine amg_@X@precsetsm(prec,val,info,ilev,ilmax,pos)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, mld_@X@_base_smoother_type, psb_ipk_
-      class(mld_@X@prec_type), target, intent(inout):: prec
-      class(mld_@X@_base_smoother_type), intent(in) :: val
+           & amg_@X@prec_type, amg_@X@_base_smoother_type, psb_ipk_
+      class(amg_@X@prec_type), target, intent(inout):: prec
+      class(amg_@X@_base_smoother_type), intent(in) :: val
       integer(psb_ipk_), intent(out)              :: info
       integer(psb_ipk_), optional, intent(in)     :: ilev,ilmax
       character(len=*), optional, intent(in)      :: pos
-    end subroutine mld_@X@precsetsm
-    subroutine mld_@X@precsetsv(prec,val,info,ilev,ilmax,pos)
+    end subroutine amg_@X@precsetsm
+    subroutine amg_@X@precsetsv(prec,val,info,ilev,ilmax,pos)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, mld_@X@_base_solver_type, psb_ipk_
-      class(mld_@X@prec_type), intent(inout)      :: prec
-      class(mld_@X@_base_solver_type), intent(in) :: val
+           & amg_@X@prec_type, amg_@X@_base_solver_type, psb_ipk_
+      class(amg_@X@prec_type), intent(inout)      :: prec
+      class(amg_@X@_base_solver_type), intent(in) :: val
       integer(psb_ipk_), intent(out)              :: info
       integer(psb_ipk_), optional, intent(in)     :: ilev,ilmax
       character(len=*), optional, intent(in)      :: pos
-    end subroutine mld_@X@precsetsv
-    subroutine mld_@X@precsetag(prec,val,info,ilev,ilmax,pos)
+    end subroutine amg_@X@precsetsv
+    subroutine amg_@X@precsetag(prec,val,info,ilev,ilmax,pos)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, mld_@X@_base_aggregator_type, psb_ipk_
-      class(mld_@X@prec_type), intent(inout)      :: prec
-      class(mld_@X@_base_aggregator_type), intent(in) :: val
+           & amg_@X@prec_type, amg_@X@_base_aggregator_type, psb_ipk_
+      class(amg_@X@prec_type), intent(inout)      :: prec
+      class(amg_@X@_base_aggregator_type), intent(in) :: val
       integer(psb_ipk_), intent(out)              :: info
       integer(psb_ipk_), optional, intent(in)     :: ilev,ilmax
       character(len=*), optional, intent(in)      :: pos
-    end subroutine mld_@X@precsetag
-    subroutine mld_@X@cprecseti(prec,what,val,info,ilev,ilmax,pos,idx)
+    end subroutine amg_@X@precsetag
+    subroutine amg_@X@cprecseti(prec,what,val,info,ilev,ilmax,pos,idx)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, psb_ipk_
-      class(mld_@X@prec_type), intent(inout)   :: prec
+           & amg_@X@prec_type, psb_ipk_
+      class(amg_@X@prec_type), intent(inout)   :: prec
       character(len=*), intent(in)             :: what 
       integer(psb_ipk_), intent(in)            :: val
       integer(psb_ipk_), intent(out)           :: info
       integer(psb_ipk_), optional, intent(in)  :: ilev,ilmax,idx
       character(len=*), optional, intent(in)      :: pos
-    end subroutine mld_@X@cprecseti
-    subroutine mld_@X@cprecsetr(prec,what,val,info,ilev,ilmax,pos,idx)
+    end subroutine amg_@X@cprecseti
+    subroutine amg_@X@cprecsetr(prec,what,val,info,ilev,ilmax,pos,idx)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, psb_ipk_
-      class(mld_@X@prec_type), intent(inout)   :: prec
+           & amg_@X@prec_type, psb_ipk_
+      class(amg_@X@prec_type), intent(inout)   :: prec
       character(len=*), intent(in)             :: what 
       @RTYPE@(@FKIND@), intent(in)                :: val
       integer(psb_ipk_), intent(out)           :: info
       integer(psb_ipk_), optional, intent(in)  :: ilev,ilmax,idx
       character(len=*), optional, intent(in)      :: pos
-    end subroutine mld_@X@cprecsetr
-    subroutine mld_@X@cprecsetc(prec,what,string,info,ilev,ilmax,pos,idx)
+    end subroutine amg_@X@cprecsetr
+    subroutine amg_@X@cprecsetc(prec,what,string,info,ilev,ilmax,pos,idx)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, psb_ipk_
-      class(mld_@X@prec_type), intent(inout)   :: prec
+           & amg_@X@prec_type, psb_ipk_
+      class(amg_@X@prec_type), intent(inout)   :: prec
       character(len=*), intent(in)             :: what 
       character(len=*), intent(in)             :: string
       integer(psb_ipk_), intent(out)           :: info
       integer(psb_ipk_), optional, intent(in)  :: ilev,ilmax,idx
       character(len=*), optional, intent(in)      :: pos
-    end subroutine mld_@X@cprecsetc
+    end subroutine amg_@X@cprecsetc
   end interface
 
-  interface mld_precinit
-    subroutine mld_@X@precinit(ictxt,prec,ptype,info)
+  interface amg_precinit
+    subroutine amg_@X@precinit(ictxt,prec,ptype,info)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, psb_ipk_
+           & amg_@X@prec_type, psb_ipk_
       integer(psb_ipk_), intent(in)            :: ictxt
-      class(mld_@X@prec_type), intent(inout)    :: prec
+      class(amg_@X@prec_type), intent(inout)    :: prec
       character(len=*), intent(in)             :: ptype
       integer(psb_ipk_), intent(out)           :: info
-    end subroutine mld_@X@precinit
-  end interface mld_precinit
+    end subroutine amg_@X@precinit
+  end interface amg_precinit
 
-  interface mld_precbld
-    subroutine mld_@X@precbld(a,desc_a,prec,info,amold,vmold,imold)
+  interface amg_precbld
+    subroutine amg_@X@precbld(a,desc_a,prec,info,amold,vmold,imold)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
            & psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, &
-           & psb_i_base_vect_type, mld_@X@prec_type, psb_ipk_
+           & psb_i_base_vect_type, amg_@X@prec_type, psb_ipk_
       implicit none
       type(psb_@X@spmat_type), intent(in), target          :: a
       type(psb_desc_type), intent(inout), target           :: desc_a
-      class(mld_@X@prec_type), intent(inout), target       :: prec
+      class(amg_@X@prec_type), intent(inout), target       :: prec
       integer(psb_ipk_), intent(out)                       :: info
       class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
       class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
       class(psb_i_base_vect_type), intent(in), optional  :: imold
       !      character, intent(in),optional             :: upd
-    end subroutine mld_@X@precbld
-  end interface mld_precbld
+    end subroutine amg_@X@precbld
+  end interface amg_precbld
 
-  interface mld_hierarchy_bld
-    subroutine mld_@X@_hierarchy_bld(a,desc_a,prec,info)
+  interface amg_hierarchy_bld
+    subroutine amg_@X@_hierarchy_bld(a,desc_a,prec,info)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & mld_@X@prec_type, psb_ipk_
+           & amg_@X@prec_type, psb_ipk_
       implicit none
       type(psb_@X@spmat_type), intent(in), target          :: a
       type(psb_desc_type), intent(inout), target           :: desc_a
-      class(mld_@X@prec_type), intent(inout), target        :: prec
+      class(amg_@X@prec_type), intent(inout), target        :: prec
       integer(psb_ipk_), intent(out)                       :: info
       !      character, intent(in),optional             :: upd
-    end subroutine mld_@X@_hierarchy_bld
-  end interface mld_hierarchy_bld
+    end subroutine amg_@X@_hierarchy_bld
+  end interface amg_hierarchy_bld
 
-  interface mld_smoothers_bld
-    subroutine mld_@X@_smoothers_bld(a,desc_a,prec,info,amold,vmold,imold)
+  interface amg_smoothers_bld
+    subroutine amg_@X@_smoothers_bld(a,desc_a,prec,info,amold,vmold,imold)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
            & psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, &
-           & psb_i_base_vect_type, mld_@X@prec_type, psb_ipk_
+           & psb_i_base_vect_type, amg_@X@prec_type, psb_ipk_
       implicit none
       type(psb_@X@spmat_type), intent(in), target          :: a
       type(psb_desc_type), intent(inout), target           :: desc_a
-      class(mld_@X@prec_type), intent(inout), target        :: prec
+      class(amg_@X@prec_type), intent(inout), target        :: prec
       integer(psb_ipk_), intent(out)                       :: info
       class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
       class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
       class(psb_i_base_vect_type), intent(in), optional  :: imold
       !      character, intent(in),optional             :: upd
-    end subroutine mld_@X@_smoothers_bld
-  end interface mld_smoothers_bld
+    end subroutine amg_@X@_smoothers_bld
+  end interface amg_smoothers_bld
   
 contains
   !
   ! Function returning a pointer to the smoother
   !
-  function mld_@X@_get_smootherp(prec,ilev) result(val)
+  function amg_@X@_get_smootherp(prec,ilev) result(val)
     implicit none 
-    class(mld_@X@prec_type), target, intent(in) :: prec
+    class(amg_@X@prec_type), target, intent(in) :: prec
     integer(psb_ipk_), optional                 :: ilev
-    class(mld_@X@_base_smoother_type), pointer  :: val
+    class(amg_@X@_base_smoother_type), pointer  :: val
     integer(psb_ipk_)        :: ilev_
     
     val => null()
@@ -353,15 +353,15 @@ contains
         end if
       end if
     end if
-  end function mld_@X@_get_smootherp
+  end function amg_@X@_get_smootherp
   !
   ! Function returning a pointer to the solver
   !
-  function mld_@X@_get_solverp(prec,ilev) result(val)
+  function amg_@X@_get_solverp(prec,ilev) result(val)
     implicit none 
-    class(mld_@X@prec_type), target, intent(in) :: prec
+    class(amg_@X@prec_type), target, intent(in) :: prec
     integer(psb_ipk_), optional                 :: ilev
-    class(mld_@X@_base_solver_type), pointer  :: val
+    class(amg_@X@_base_solver_type), pointer  :: val
     integer(psb_ipk_)        :: ilev_
     
     val => null()
@@ -380,26 +380,26 @@ contains
         end if
       end if
     end if
-  end function mld_@X@_get_solverp
+  end function amg_@X@_get_solverp
   !
   ! Function returning the size of the precv(:) array
   !
-  function mld_@X@_get_nlevs(prec) result(val)
+  function amg_@X@_get_nlevs(prec) result(val)
     implicit none 
-    class(mld_@X@prec_type), intent(in) :: prec
+    class(amg_@X@prec_type), intent(in) :: prec
     integer(psb_ipk_) :: val
     val = 0
     if (allocated(prec%precv)) then 
       val = size(prec%precv)
     end if
-  end function mld_@X@_get_nlevs
+  end function amg_@X@_get_nlevs
   !
-  ! Function returning the size of the mld_prec_type data structure
+  ! Function returning the size of the amg_prec_type data structure
   ! in bytes or in number of nonzeros of the operator(s) involved. 
   !
-  function mld_@X@_get_nzeros(prec) result(val)
+  function amg_@X@_get_nzeros(prec) result(val)
     implicit none 
-    class(mld_@X@prec_type), intent(in) :: prec
+    class(amg_@X@prec_type), intent(in) :: prec
     integer(psb_epk_) :: val
     integer(psb_ipk_)        :: i
     val = 0
@@ -408,11 +408,11 @@ contains
         val = val + prec%precv(i)%get_nzeros()
       end do
     end if
-  end function mld_@X@_get_nzeros
+  end function amg_@X@_get_nzeros
 
-  function mld_@X@prec_sizeof(prec) result(val)
+  function amg_@X@prec_sizeof(prec) result(val)
     implicit none 
-    class(mld_@X@prec_type), intent(in) :: prec
+    class(amg_@X@prec_type), intent(in) :: prec
     integer(psb_epk_) :: val
     integer(psb_ipk_)        :: i
     val = 0
@@ -422,7 +422,7 @@ contains
         val = val + prec%precv(i)%sizeof()
       end do
     end if
-  end function mld_@X@prec_sizeof
+  end function amg_@X@prec_sizeof
 
   !
   ! Operator complexity: ratio of total number
@@ -431,19 +431,19 @@ contains
   ! (original matrix)
   !
   
-  function mld_@X@_get_compl(prec) result(val)
+  function amg_@X@_get_compl(prec) result(val)
     implicit none 
-    class(mld_@X@prec_type), intent(in) :: prec
+    class(amg_@X@prec_type), intent(in) :: prec
     @TYPE@(@FKIND@)  :: val
     
     val = prec%ag_data%op_complexity
 
-  end function mld_@X@_get_compl
+  end function amg_@X@_get_compl
   
-  subroutine mld_@X@_cmp_compl(prec) 
+  subroutine amg_@X@_cmp_compl(prec) 
 
     implicit none 
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     
     @RTYPE@(@FKIND@) :: num, den, nmin
     integer(psb_ipk_) :: ictxt 
@@ -472,25 +472,25 @@ contains
       call psb_sum(ictxt,den)
     end if
     prec%ag_data%op_complexity = num/den
-  end subroutine mld_@X@_cmp_compl
+  end subroutine amg_@X@_cmp_compl
   
   !
   ! Average coarsening ratio
   !
   
-  function mld_@X@_get_avg_cr(prec) result(val)
+  function amg_@X@_get_avg_cr(prec) result(val)
     implicit none 
-    class(mld_@X@prec_type), intent(in) :: prec
+    class(amg_@X@prec_type), intent(in) :: prec
     @TYPE@(@FKIND@)  :: val
     
     val = prec%ag_data%avg_cr
 
-  end function mld_@X@_get_avg_cr
+  end function amg_@X@_get_avg_cr
   
-  subroutine mld_@X@_cmp_avg_cr(prec) 
+  subroutine amg_@X@_cmp_avg_cr(prec) 
 
     implicit none 
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     
     @RTYPE@(@FKIND@)  :: avgcr
     integer(psb_ipk_) :: ictxt 
@@ -509,26 +509,26 @@ contains
     end if
     call psb_sum(ictxt,avgcr) 
     prec%ag_data%avg_cr = avgcr/np
-  end subroutine mld_@X@_cmp_avg_cr
+  end subroutine amg_@X@_cmp_avg_cr
   
   !
-  ! Subroutines: mld_Tprec_free
+  ! Subroutines: amg_Tprec_free
   ! Version: @TYPE@
   !
-  !  These routines deallocate the mld_Tprec_type data structures.
+  !  These routines deallocate the amg_Tprec_type data structures.
   !
   ! Arguments:
-  !  p       -  type(mld_Tprec_type), input.
+  !  p       -  type(amg_Tprec_type), input.
   !             The data structure to be deallocated.
   !  info    -  integer, output.
   !             error code.
   !
-  subroutine mld_@X@precfree(p,info)
+  subroutine amg_@X@precfree(p,info)
   
     implicit none
     
     ! Arguments
-    type(mld_@X@prec_type), intent(inout) :: p
+    type(amg_@X@prec_type), intent(inout) :: p
     integer(psb_ipk_), intent(out)        :: info
     
     ! Local variables
@@ -536,7 +536,7 @@ contains
     character(len=20)   :: name
     
     info=psb_success_
-    name = 'mld_@X@precfree'
+    name = 'amg_@X@precfree'
     call psb_erractionsave(err_act)
     if (psb_errstatus_fatal()) then
       info = psb_err_internal_error_; return
@@ -549,14 +549,14 @@ contains
     
     return
     
-  end subroutine mld_@X@precfree
+  end subroutine amg_@X@precfree
 
-  subroutine mld_@X@_prec_free(prec,info)
+  subroutine amg_@X@_prec_free(prec,info)
     
     implicit none
     
     ! Arguments
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     integer(psb_ipk_), intent(out)        :: info
     
     ! Local variables
@@ -564,7 +564,7 @@ contains
     character(len=20)   :: name
     
     info=psb_success_
-    name = 'mld_@X@precfree'
+    name = 'amg_@X@precfree'
     call psb_erractionsave(err_act)
     if (psb_errstatus_fatal()) then
       info = psb_err_internal_error_; goto 9999
@@ -583,17 +583,17 @@ contains
 9999 call psb_error_handler(err_act)
     return
     
-  end subroutine mld_@X@_prec_free
+  end subroutine amg_@X@_prec_free
 
   
 
   !
   ! Top level methods. 
   !
-  subroutine mld_@X@_apply2_vect(prec,x,y,desc_data,info,trans,work)
+  subroutine amg_@X@_apply2_vect(prec,x,y,desc_data,info,trans,work)
     implicit none 
     type(psb_desc_type),intent(in)        :: desc_data
-    class(mld_@X@prec_type), intent(inout)  :: prec
+    class(amg_@X@prec_type), intent(inout)  :: prec
     type(psb_@X@_vect_type),intent(inout)   :: x
     type(psb_@X@_vect_type),intent(inout)   :: y
     integer(psb_ipk_), intent(out)          :: info
@@ -605,8 +605,8 @@ contains
     call psb_erractionsave(err_act)
 
     select type(prec) 
-    type is (mld_@X@prec_type)
-      call mld_precapply(prec,x,y,desc_data,info,trans,work)
+    type is (amg_@X@prec_type)
+      call amg_precapply(prec,x,y,desc_data,info,trans,work)
     class default
       info = psb_err_missing_override_method_
       call psb_errpush(info,name)
@@ -619,12 +619,12 @@ contains
 9999 call psb_error_handler(err_act)
     return
 
-  end subroutine mld_@X@_apply2_vect
+  end subroutine amg_@X@_apply2_vect
 
-  subroutine mld_@X@_apply1_vect(prec,x,desc_data,info,trans,work)
+  subroutine amg_@X@_apply1_vect(prec,x,desc_data,info,trans,work)
     implicit none 
     type(psb_desc_type),intent(in)          :: desc_data
-    class(mld_@X@prec_type), intent(inout)  :: prec
+    class(amg_@X@prec_type), intent(inout)  :: prec
     type(psb_@X@_vect_type),intent(inout)   :: x
     integer(psb_ipk_), intent(out)          :: info
     character(len=1), optional            :: trans
@@ -635,8 +635,8 @@ contains
     call psb_erractionsave(err_act)
 
     select type(prec) 
-    type is (mld_@X@prec_type)
-      call mld_precapply(prec,x,desc_data,info,trans,work)
+    type is (amg_@X@prec_type)
+      call amg_precapply(prec,x,desc_data,info,trans,work)
     class default
       info = psb_err_missing_override_method_
       call psb_errpush(info,name)
@@ -649,13 +649,13 @@ contains
 9999 call psb_error_handler(err_act)
     return
 
-  end subroutine mld_@X@_apply1_vect
+  end subroutine amg_@X@_apply1_vect
 
 
-  subroutine mld_@X@_apply2v(prec,x,y,desc_data,info,trans,work)
+  subroutine amg_@X@_apply2v(prec,x,y,desc_data,info,trans,work)
     implicit none 
     type(psb_desc_type),intent(in)    :: desc_data
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     @TYPE@(@FKIND@),intent(inout)      :: x(:)
     @TYPE@(@FKIND@),intent(inout)      :: y(:)
     integer(psb_ipk_), intent(out)     :: info
@@ -667,8 +667,8 @@ contains
     call psb_erractionsave(err_act)
 
     select type(prec) 
-    type is (mld_@X@prec_type)
-      call mld_precapply(prec,x,y,desc_data,info,trans,work)
+    type is (amg_@X@prec_type)
+      call amg_precapply(prec,x,y,desc_data,info,trans,work)
     class default
       info = psb_err_missing_override_method_
       call psb_errpush(info,name)
@@ -681,12 +681,12 @@ contains
 9999 call psb_error_handler(err_act)
     return
 
-  end subroutine mld_@X@_apply2v
+  end subroutine amg_@X@_apply2v
 
-  subroutine mld_@X@_apply1v(prec,x,desc_data,info,trans)
+  subroutine amg_@X@_apply1v(prec,x,desc_data,info,trans)
     implicit none 
     type(psb_desc_type),intent(in)    :: desc_data
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     @TYPE@(@FKIND@),intent(inout)      :: x(:)
     integer(psb_ipk_), intent(out)     :: info
     character(len=1), optional         :: trans
@@ -696,8 +696,8 @@ contains
     call psb_erractionsave(err_act)
 
     select type(prec) 
-    type is (mld_@X@prec_type)
-      call mld_precapply(prec,x,desc_data,info,trans)
+    type is (amg_@X@prec_type)
+      call amg_precapply(prec,x,desc_data,info,trans)
     class default
       info = psb_err_missing_override_method_
       call psb_errpush(info,name)
@@ -710,15 +710,15 @@ contains
 9999 call psb_error_handler(err_act)
   return
 
-  end subroutine mld_@X@_apply1v
+  end subroutine amg_@X@_apply1v
 
 
-  subroutine mld_@X@_dump(prec,info,istart,iend,iproc,prefix,head,&
+  subroutine amg_@X@_dump(prec,info,istart,iend,iproc,prefix,head,&
        & ac,rp,smoother,solver,tprol,&
        & global_num)
     
     implicit none 
-    class(mld_@X@prec_type), intent(in)     :: prec
+    class(amg_@X@prec_type), intent(in)     :: prec
     integer(psb_ipk_), intent(out)          :: info
     integer(psb_ipk_), intent(in), optional :: istart, iend, iproc
     character(len=*), intent(in), optional  :: prefix, head
@@ -754,12 +754,12 @@ contains
              & global_num=global_num)
       end do
     end if
-  end subroutine mld_@X@_dump
+  end subroutine amg_@X@_dump
 
-  subroutine mld_@X@_cnv(prec,info,amold,vmold,imold)
+  subroutine amg_@X@_cnv(prec,info,amold,vmold,imold)
 
     implicit none 
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     integer(psb_ipk_), intent(out)       :: info
     class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
     class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
@@ -775,24 +775,24 @@ contains
       end do
     end if
     
-  end subroutine mld_@X@_cnv
+  end subroutine amg_@X@_cnv
 
-  subroutine mld_@X@_clone(prec,precout,info)
+  subroutine amg_@X@_clone(prec,precout,info)
 
     implicit none 
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     class(psb_@X@prec_type), intent(inout) :: precout
     integer(psb_ipk_), intent(out)       :: info
     
     call precout%free(info)
-    if (info == 0) call mld_@X@_inner_clone(prec,precout,info) 
+    if (info == 0) call amg_@X@_inner_clone(prec,precout,info) 
 
-  end subroutine mld_@X@_clone
+  end subroutine amg_@X@_clone
 
-  subroutine mld_@X@_inner_clone(prec,precout,info)
+  subroutine amg_@X@_inner_clone(prec,precout,info)
 
     implicit none 
-    class(mld_@X@prec_type), intent(inout)         :: prec
+    class(amg_@X@prec_type), intent(inout)         :: prec
     class(psb_@X@prec_type), target, intent(inout) :: precout
     integer(psb_ipk_), intent(out)             :: info
     ! Local vars
@@ -801,7 +801,7 @@ contains
 
     info = psb_success_
     select type(pout => precout)
-    class is (mld_@X@prec_type)
+    class is (amg_@X@prec_type)
       pout%ictxt         = prec%ictxt
       pout%ag_data       = prec%ag_data
       pout%outer_sweeps  = prec%outer_sweeps
@@ -831,13 +831,13 @@ contains
       info = psb_err_invalid_input_
     end select
 9999 continue
-  end subroutine mld_@X@_inner_clone
+  end subroutine amg_@X@_inner_clone
 
   subroutine @X@_prec_move_alloc(prec, b,info)
     use psb_base_mod
     implicit none
-    class(mld_@X@prec_type), intent(inout) :: prec
-    class(mld_@X@prec_type), intent(inout), target :: b
+    class(amg_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout), target :: b
     integer(psb_ipk_), intent(out) :: info 
     integer(psb_ipk_) :: i
     
@@ -869,12 +869,12 @@ contains
     end if
   end subroutine @X@_prec_move_alloc
 
-  subroutine mld_@X@_allocate_wrk(prec,info,vmold,desc)
+  subroutine amg_@X@_allocate_wrk(prec,info,vmold,desc)
     use psb_base_mod
     implicit none
     
     ! Arguments
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     integer(psb_ipk_), intent(out)        :: info
     class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
     !
@@ -888,7 +888,7 @@ contains
     character(len=20)   :: name
     
     info=psb_success_
-    name = 'mld_@X@_allocate_wrk'
+    name = 'amg_@X@_allocate_wrk'
     call psb_erractionsave(err_act)
     if (psb_errstatus_fatal()) then
       info = psb_err_internal_error_; goto 9999
@@ -911,14 +911,14 @@ contains
 9999 call psb_error_handler(err_act)
     return
     
-  end subroutine mld_@X@_allocate_wrk
+  end subroutine amg_@X@_allocate_wrk
 
-  subroutine mld_@X@_free_wrk(prec,info)
+  subroutine amg_@X@_free_wrk(prec,info)
     use psb_base_mod
     implicit none
 
     ! Arguments
-    class(mld_@X@prec_type), intent(inout) :: prec
+    class(amg_@X@prec_type), intent(inout) :: prec
     integer(psb_ipk_), intent(out)        :: info
 
     ! Local variables
@@ -926,7 +926,7 @@ contains
     character(len=20)   :: name
 
     info=psb_success_
-    name = 'mld_@X@_free_wrk'
+    name = 'amg_@X@_free_wrk'
     call psb_erractionsave(err_act)
     if (psb_errstatus_fatal()) then
       info = psb_err_internal_error_; goto 9999
@@ -945,20 +945,20 @@ contains
 9999 call psb_error_handler(err_act)
     return
 
-  end subroutine mld_@X@_free_wrk
+  end subroutine amg_@X@_free_wrk
 
-  function mld_@X@_is_allocated_wrk(prec) result(res)
+  function amg_@X@_is_allocated_wrk(prec) result(res)
     use psb_base_mod
     implicit none
     
     ! Arguments
-    class(mld_@X@prec_type), intent(in) :: prec
+    class(amg_@X@prec_type), intent(in) :: prec
     logical :: res
 
     res = .false.
     if (.not.allocated(prec%precv)) return
     res = allocated(prec%precv(1)%wrk)
      
-  end function mld_@X@_is_allocated_wrk
+  end function amg_@X@_is_allocated_wrk
 
-end module mld_@X@_prec_type
+end module amg_@X@_prec_type

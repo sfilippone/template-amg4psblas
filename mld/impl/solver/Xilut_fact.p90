@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,11 +35,11 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@ilut_fact.f90
+! File: amg_@X@ilut_fact.f90
 !
-! Subroutine: mld_@X@ilut_fact
+! Subroutine: amg_@X@ilut_fact
 ! Version:    @TYPE@
-! Contains:   mld_@X@ilut_factint, ilut_copyin, ilut_fact, ilut_copyout
+! Contains:   amg_@X@ilut_factint, ilut_copyin, ilut_fact, ilut_copyout
 !
 !  This routine computes the ILU(k,t) factorization of the diagonal blocks
 !  of a distributed matrix. This factorization is used to build the 'base
@@ -66,35 +66,35 @@
 !               The sparse matrix structure containing the local matrix.
 !               Note that if the 'base' Additive Schwarz preconditioner
 !               has overlap greater than 0 and the matrix has not been reordered
-!               (see mld_fact_bld), then a contains only the 'original' local part
+!               (see amg_fact_bld), then a contains only the 'original' local part
 !               of the distributed matrix, i.e. the rows of the matrix held
 !               by the calling process according to the initial data distribution.
 !    l       -  type(psb_@X@spmat_type), input/output.
 !               The L factor in the incomplete factorization.
-!               Note: its allocation is managed by the calling routine mld_ilu_bld,
+!               Note: its allocation is managed by the calling routine amg_ilu_bld,
 !               hence it cannot be only intent(out).
 !    u       -  type(psb_@X@spmat_type), input/output.
 !               The U factor (except its diagonal) in the incomplete factorization.
-!               Note: its allocation is managed by the calling routine mld_ilu_bld,
+!               Note: its allocation is managed by the calling routine amg_ilu_bld,
 !               hence it cannot be only intent(out).
 !    d       -  @TYPE@(@FKIND@), dimension(:), input/output.
 !               The inverse of the diagonal entries of the U factor in the incomplete
 !               factorization.
-!               Note: its allocation is managed by the calling routine mld_ilu_bld,
+!               Note: its allocation is managed by the calling routine amg_ilu_bld,
 !               hence it cannot be only intent(out).
 !    info    -  integer, output.                    
 !               Error code.
 !    blck    -  type(psb_@X@spmat_type), input, optional, target.
 !               The sparse matrix structure containing the remote rows of the
-!               distributed matrix, that have been retrieved by mld_as_bld
+!               distributed matrix, that have been retrieved by amg_as_bld
 !               to build an Additive Schwarz base preconditioner with overlap
 !               greater than 0. If the overlap is 0 or the matrix has been reordered
-!               (see mld_fact_bld), then blck does not contain any row.
+!               (see amg_fact_bld), then blck does not contain any row.
 !  
-subroutine mld_@X@ilut_fact(fill_in,thres,a,l,u,d,info,blck,iscale)
+subroutine amg_@X@ilut_fact(fill_in,thres,a,l,u,d,info,blck,iscale)
   
   use psb_base_mod
-  use mld_@X@_ilu_fact_mod, mld_protect_name => mld_@X@ilut_fact
+  use amg_@X@_ilu_fact_mod, amg_protect_name => amg_@X@ilut_fact
 
   implicit none
 
@@ -115,7 +115,7 @@ subroutine mld_@X@ilut_fact(fill_in,thres,a,l,u,d,info,blck,iscale)
   real(@FKIND@)      :: scale
   character(len=20)   :: name, ch_err
 
-  name='mld_@X@ilut_fact'
+  name='amg_@X@ilut_fact'
   info = psb_success_
   call psb_erractionsave(err_act)
 
@@ -143,13 +143,13 @@ subroutine mld_@X@ilut_fact(fill_in,thres,a,l,u,d,info,blck,iscale)
   if (present(iscale)) then 
     iscale_ = iscale
   else
-    iscale_ = mld_ilu_scale_none_
+    iscale_ = amg_ilu_scale_none_
   end if
   
   select case(iscale_) 
-  case(mld_ilu_scale_none_)
+  case(amg_ilu_scale_none_)
     scale = sone
-  case(mld_ilu_scale_maxval_)
+  case(amg_ilu_scale_maxval_)
     scale = max(a%maxval(),blck_%maxval())
     scale = sone/scale
   case default
@@ -173,11 +173,11 @@ subroutine mld_@X@ilut_fact(fill_in,thres,a,l,u,d,info,blck,iscale)
   !
   ! Compute the ILU(k,t) factorization
   !
-  call mld_@X@ilut_factint(fill_in,thres,a,blck_,&
+  call amg_@X@ilut_factint(fill_in,thres,a,blck_,&
        & d,ll%val,ll%ja,ll%irp,uu%val,uu%ja,uu%irp,l1,l2,info,scale)
   if (info /= psb_success_) then
      info=psb_err_from_subroutine_
-     ch_err='mld_@X@ilut_factint'
+     ch_err='amg_@X@ilut_factint'
      call psb_errpush(info,name,a_err=ch_err)
      goto 9999
   end if
@@ -219,9 +219,9 @@ subroutine mld_@X@ilut_fact(fill_in,thres,a,l,u,d,info,blck,iscale)
 contains
 
   !
-  ! Subroutine: mld_@X@ilut_factint
+  ! Subroutine: amg_@X@ilut_factint
   ! Version:    @TYPE@
-  ! Note: internal subroutine of mld_@X@ilut_fact
+  ! Note: internal subroutine of amg_@X@ilut_fact
   !
   !  This routine computes the ILU(k,t) factorization of the diagonal blocks of a
   !  distributed matrix. This factorization is used to build the 'base
@@ -247,15 +247,15 @@ contains
   !               The sparse matrix structure containing the local matrix.
   !               Note that, if the 'base' Additive Schwarz preconditioner
   !               has overlap greater than 0 and the matrix has not been reordered
-  !               (see mld_fact_bld), then a contains only the 'original' local part
+  !               (see amg_fact_bld), then a contains only the 'original' local part
   !               of the distributed matrix, i.e. the rows of the matrix held
   !               by the calling process according to the initial data distribution.
   !    b       -  type(psb_@X@spmat_type), input.
   !               The sparse matrix structure containing the remote rows of the
-  !               distributed matrix, that have been retrieved by mld_as_bld
+  !               distributed matrix, that have been retrieved by amg_as_bld
   !               to build an Additive Schwarz base preconditioner with overlap
   !               greater than 0. If the overlap is 0 or the matrix has been reordered
-  !               (see mld_fact_bld), then b does not contain any row.
+  !               (see amg_fact_bld), then b does not contain any row.
   !    d       -  @TYPE@(@FKIND@), dimension(:), output.
   !               The inverse of the diagonal entries of the U factor in the incomplete
   !               factorization.
@@ -283,7 +283,7 @@ contains
   !    info    -  integer, output.           
   !               Error code.
   !
-  subroutine mld_@X@ilut_factint(fill_in,thres,a,b,&
+  subroutine amg_@X@ilut_factint(fill_in,thres,a,b,&
        & d,lval,lja,lirp,uval,uja,uirp,l1,l2,info,scale)
 
     use psb_base_mod
@@ -308,7 +308,7 @@ contains
     @TYPE@(@FKIND@), allocatable  :: row(:)
     type(psb_i_heap)             :: heap
     type(psb_@X@_coo_sparse_mat)   :: trw
-    character(len=20), parameter :: name='mld_@X@ilut_factint'
+    character(len=20), parameter :: name='amg_@X@ilut_factint'
     character(len=20)            :: ch_err
 
     info = psb_success_
@@ -424,12 +424,12 @@ contains
 9999 call psb_error_handler(err_act)
     return
 
-  end subroutine mld_@X@ilut_factint
+  end subroutine amg_@X@ilut_factint
 
   !
   ! Subroutine: ilut_copyin
   ! Version:    @TYPE@
-  ! Note: internal subroutine of mld_@X@ilut_fact
+  ! Note: internal subroutine of amg_@X@ilut_fact
   !
   !  This routine performs the following tasks:
   !  - copying a row of a sparse matrix A, stored in the sparse matrix structure a,
@@ -441,14 +441,14 @@ contains
   !  - computing the 2-norm of the row.
   !  The output array row is such that it contains a full row of A, i.e. it contains
   !  also the zero entries of the row. This is useful for the elimination step
-  !  performed by ilut_fact after the call to ilut_copyin (see mld_ilut_factint).
+  !  performed by ilut_fact after the call to ilut_copyin (see amg_ilut_factint).
   !
   !  If the sparse matrix is in CSR format, a 'straight' copy is performed;
   !  otherwise psb_sp_getblk is used to extract a block of rows, which is then
   !  copied, row by row, into the array row, through successive calls to
   !  ilut_copyin.
   !
-  !  This routine is used by mld_@X@ilut_factint in the computation of the ILU(k,t)
+  !  This routine is used by amg_@X@ilut_factint in the computation of the ILU(k,t)
   !  factorization of a local sparse matrix.
   !  
   !
@@ -482,7 +482,7 @@ contains
   !    nrmi    -  real(@FKIND@), output.
   !               The 2-norm of the current row.
   !    row     -  @TYPE@(@FKIND@), dimension(:), input/output.
-  !               In input it is the null vector (see mld_ilut_factint and
+  !               In input it is the null vector (see amg_ilut_factint and
   !               ilut_copyout). In output it contains the row extracted
   !               from the matrix A. It actually contains a full row, i.e.
   !               it contains also the zero entries of the row.
@@ -524,7 +524,7 @@ contains
     integer(psb_ipk_), parameter    :: nrb=40
     real(@FKIND@)        :: dmaxup
     real(@FKIND@), external    :: dnrm2
-    character(len=20), parameter  :: name='mld_@X@ilut_factint'
+    character(len=20), parameter  :: name='amg_@X@ilut_factint'
 
     info = psb_success_
     call psb_erractionsave(err_act)
@@ -641,14 +641,14 @@ contains
   !
   ! Subroutine: ilut_fact
   ! Version:    @TYPE@
-  ! Note: internal subroutine of mld_@X@ilut_fact
+  ! Note: internal subroutine of amg_@X@ilut_fact
   !
   !  This routine does an elimination step of the ILU(k,t) factorization on a single
-  !  matrix row (see the calling routine mld_ilut_factint). Actually, only the dropping
+  !  matrix row (see the calling routine amg_ilut_factint). Actually, only the dropping
   !  rule based on the threshold is applied here. The dropping rule based on the
   !  fill-in is applied by ilut_copyout.
   !
-  !  The routine is used by mld_@X@ilut_factint in the computation of the ILU(k,t)
+  !  The routine is used by amg_@X@ilut_factint in the computation of the ILU(k,t)
   !  factorization of a local sparse matrix.
   !
   !
@@ -677,12 +677,12 @@ contains
   !    uja    -  integer, dimension(:), input.
   !               The column indices of the nonzero entries of the part of the U
   !               factor above the current row, stored in uval row by row (see
-  !               ilut_copyout, called by mld_@X@ilut_factint), according to the CSR
+  !               ilut_copyout, called by amg_@X@ilut_factint), according to the CSR
   !               storage format.
   !    uirp    -  integer, dimension(:), input.
   !               The indices identifying the first nonzero entry of each row of
   !               the U factor above the current row, stored in uval row by row
-  !               (see ilut_copyout, called by mld_@X@ilut_factint), according to
+  !               (see ilut_copyout, called by amg_@X@ilut_factint), according to
   !               the CSR storage format.
   !    uval   -  @TYPE@(@FKIND@), dimension(:), input.
   !               The entries of the U factor above the current row (except the
@@ -797,7 +797,7 @@ contains
   !
   ! Subroutine: ilut_copyout
   ! Version:    @TYPE@
-  ! Note: internal subroutine of mld_@X@ilut_fact
+  ! Note: internal subroutine of amg_@X@ilut_fact
   !
   !  This routine copies a matrix row, computed by ilut_fact by applying an
   !  elimination step of the ILU(k,t) factorization, into the arrays lval,
@@ -815,10 +815,10 @@ contains
   !  - the inverse of the diagonal entries of U is actually stored into d; this
   !    is then managed in the solve stage associated to the ILU(k,t) factorization;
   !  - the row entries are stored in lval and uval according to the CSR format;
-  !  - the array row is re-initialized for future use in mld_ilut_fact(see also
+  !  - the array row is re-initialized for future use in amg_ilut_fact(see also
   !    ilut_copyin and ilut_fact).
   !
-  !  This routine is used by mld_@X@ilut_factint in the computation of the ILU(k,t)
+  !  This routine is used by amg_@X@ilut_factint in the computation of the ILU(k,t)
   !  factorization of a local sparse matrix.
   !  
   !
@@ -845,7 +845,7 @@ contains
   !    row     -  @TYPE@(@FKIND@), dimension(:), input/output.
   !               It contains, input, the row to be copied, and, in output,
   !               the null vector (the latter is used in the next call to
-  !               ilut_copyin in mld_ilut_fact).
+  !               ilut_copyin in amg_ilut_fact).
   !    nidx    -  integer, input.
   !               The number of entries of the array row that have been examined
   !               during the elimination step carried out by the routine ilut_fact.
@@ -859,12 +859,12 @@ contains
   !               Pointer to the last occupied entry of uval.
   !    lja    -  integer, dimension(:), input/output.
   !               The column indices of the nonzero entries of the L factor,
-  !               copied in lval row by row (see mld_@X@ilut_factint), according
+  !               copied in lval row by row (see amg_@X@ilut_factint), according
   !               to the CSR storage format.
   !    lirp    -  integer, dimension(:), input/output.
   !               The indices identifying the first nonzero entry of each row
   !               of the L factor, copied in lval row by row (see 
-  !               mld_@X@ilut_factint), according to the CSR storage format.
+  !               amg_@X@ilut_factint), according to the CSR storage format.
   !    lval   -  @TYPE@(@FKIND@), dimension(:), input/output.
   !               The array where the entries of the row corresponding to the
   !               L factor are copied.
@@ -873,12 +873,12 @@ contains
   !               row is copied (only d(i) is used by the routine). 
   !    uja    -  integer, dimension(:), input/output.
   !               The column indices of the nonzero entries of the U factor
-  !               copied in uval row by row (see mld_@X@ilut_factint), according
+  !               copied in uval row by row (see amg_@X@ilut_factint), according
   !               to the CSR storage format.
   !    uirp    -  integer, dimension(:), input/output.
   !               The indices identifying the first nonzero entry of each row
   !               of the U factor copied in uval row by row (see
-  !               mld_dilu_fctint), according to the CSR storage format.
+  !               amg_dilu_fctint), according to the CSR storage format.
   !    uval   -  @TYPE@(@FKIND@), dimension(:), input/output.
   !               The array where the entries of the row corresponding to the
   !               U factor are copied.
@@ -1183,4 +1183,4 @@ contains
   end subroutine ilut_copyout
 
 
-end subroutine mld_@X@ilut_fact
+end subroutine amg_@X@ilut_fact

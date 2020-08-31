@@ -1,14 +1,14 @@
 !   
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,18 +35,18 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_dfile_prec_descr.f90
+! File: amg_dfile_prec_descr.f90
 !
 !
-! Subroutine: mld_file_prec_descr
+! Subroutine: amg_file_prec_descr
 ! Version: @TYPE@
 !
 !  This routine prints a description of the preconditioner to the standard 
 !  output or to a file. It must be called after the preconditioner has been
-!  built by mld_precbld.
+!  built by amg_precbld.
 !
 ! Arguments:
-!  p       -  type(mld_Tprec_type), input.
+!  p       -  type(amg_Tprec_type), input.
 !             The preconditioner data structure to be printed out.
 !  info    -  integer, output.
 !             error code.
@@ -58,15 +58,15 @@
 !             The id of the process printing the message; -1 acts as a wildcard.
 !             Default is psb_root_
 !
-subroutine mld_@X@file_prec_descr(prec,iout,root)
+subroutine amg_@X@file_prec_descr(prec,iout,root)
   use psb_base_mod
-  use mld_@X@_prec_mod, mld_protect_name => mld_@X@file_prec_descr
-  use mld_@X@_inner_mod
-  use mld_@X@_gs_solver
+  use amg_@X@_prec_mod, amg_protect_name => amg_@X@file_prec_descr
+  use amg_@X@_inner_mod
+  use amg_@X@_gs_solver
   
   implicit none 
   ! Arguments
-  class(mld_@X@prec_type), intent(in)      :: prec
+  class(amg_@X@prec_type), intent(in)      :: prec
   integer(psb_ipk_), intent(in), optional :: iout
   integer(psb_ipk_), intent(in), optional :: root
 
@@ -74,7 +74,7 @@ subroutine mld_@X@file_prec_descr(prec,iout,root)
   integer(psb_ipk_) :: ilev, nlev, ilmin, info, nswps
   integer(psb_ipk_) :: ictxt, me, np
   logical           :: is_symgs
-  character(len=20), parameter :: name='mld_file_prec_descr'
+  character(len=20), parameter :: name='amg_file_prec_descr'
   integer(psb_ipk_)  :: iout_
   integer(psb_ipk_)  :: root_
 
@@ -102,7 +102,7 @@ subroutine mld_@X@file_prec_descr(prec,iout,root)
     ! The preconditioner description is printed by processor psb_root_.
     ! This agrees with the fact that all the parameters defining the
     ! preconditioner have the same values on all the procs (this is
-    ! ensured by mld_precbld).
+    ! ensured by amg_precbld).
     !
     if (me == root_) then
       nlev = size(prec%precv)
@@ -110,7 +110,7 @@ subroutine mld_@X@file_prec_descr(prec,iout,root)
         if (.not.allocated(prec%precv(ilev)%sm)) then 
           info = 3111
           write(iout_,*) ' ',name,&
-               & ': error: inconsistent MLPREC part, should call MLD_PRECINIT'
+               & ': error: inconsistent MLPREC part, should call amg_PRECINIT'
           return
         endif
       end do
@@ -126,9 +126,9 @@ subroutine mld_@X@file_prec_descr(prec,iout,root)
         if (allocated(prec%precv(1)%sm2a)) then
           is_symgs = .false.
           select type(sv2 => prec%precv(1)%sm2a%sv)
-          class is (mld_@X@_bwgs_solver_type)
+          class is (amg_@X@_bwgs_solver_type)
             select type(sv1 => prec%precv(1)%sm%sv)
-            class is (mld_@X@_gs_solver_type)
+            class is (amg_@X@_gs_solver_type)
               is_symgs = .true.
             end select
           end select
@@ -196,4 +196,4 @@ subroutine mld_@X@file_prec_descr(prec,iout,root)
     return
   endif
 
-end subroutine mld_@X@file_prec_descr
+end subroutine amg_@X@file_prec_descr

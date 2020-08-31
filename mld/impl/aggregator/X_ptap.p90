@@ -15,14 +15,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -32,21 +32,21 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_daggrmat_nosmth_bld.F90
+! File: amg_daggrmat_nosmth_bld.F90
 !
 !
-subroutine mld_@X@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
+subroutine amg_@X@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
      & coo_prol,desc_ac,coo_restr,info,desc_ax)
   use psb_base_mod
-  use mld_@X@_inner_mod
-  use mld_@X@_base_aggregator_mod, mld_protect_name => mld_@X@_ptap
+  use amg_@X@_inner_mod
+  use amg_@X@_base_aggregator_mod, amg_protect_name => amg_@X@_ptap
   implicit none
 
   ! Arguments
   type(psb_@X@_csr_sparse_mat), intent(inout) :: a_csr
   type(psb_desc_type), intent(inout)          :: desc_a
   integer(psb_lpk_), intent(inout)           :: nlaggr(:)
-  type(mld_@RT@ml_parms), intent(inout)         :: parms 
+  type(amg_@RT@ml_parms), intent(inout)         :: parms 
   type(psb_@X@_coo_sparse_mat), intent(inout)  :: coo_prol, coo_restr
   type(psb_desc_type), intent(inout)         :: desc_ac
   type(psb_@X@spmat_type), intent(out)        :: ac
@@ -67,7 +67,7 @@ subroutine mld_@X@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
   logical, parameter :: do_timings=.false., oldstyle=.false., debug=.false.  
   integer(psb_ipk_), save :: idx_spspmm=-1
 
-  name='mld_ptap'
+  name='amg_ptap'
   if(psb_get_errstatus().ne.0) return 
   info=psb_success_
   call psb_erractionsave(err_act)
@@ -247,20 +247,20 @@ contains
 
   end subroutine check_coo
   
-end subroutine mld_@X@_ptap
+end subroutine amg_@X@_ptap
 
-subroutine mld_@X@_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
+subroutine amg_@X@_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
      & coo_prol,desc_ac,coo_restr,info,desc_ax)
   use psb_base_mod
-  use mld_@X@_inner_mod
-  use mld_@X@_base_aggregator_mod !, mld_protect_name => mld_@X@_@LX@_ptap
+  use amg_@X@_inner_mod
+  use amg_@X@_base_aggregator_mod !, amg_protect_name => amg_@X@_@LX@_ptap
   implicit none
 
   ! Arguments
   type(psb_@X@_csr_sparse_mat), intent(inout) :: a_csr
   type(psb_desc_type), intent(inout)          :: desc_a
   integer(psb_lpk_), intent(inout)           :: nlaggr(:)
-  type(mld_@RT@ml_parms), intent(inout)         :: parms 
+  type(amg_@RT@ml_parms), intent(inout)         :: parms 
   type(psb_@LX@_coo_sparse_mat), intent(inout)  :: coo_prol, coo_restr
   type(psb_desc_type), intent(inout)         :: desc_ac
   type(psb_@LX@spmat_type), intent(out)        :: ac
@@ -281,7 +281,7 @@ subroutine mld_@X@_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
   logical, parameter :: do_timings=.false., oldstyle=.false., debug=.false.  
   integer(psb_ipk_), save :: idx_spspmm=-1
 
-  name='mld_ptap'
+  name='amg_ptap'
   if(psb_get_errstatus().ne.0) return 
   info=psb_success_
   call psb_erractionsave(err_act)
@@ -464,20 +464,20 @@ contains
 
   end subroutine check_coo
   
-end subroutine mld_@X@_@LX@_ptap
+end subroutine amg_@X@_@LX@_ptap
 
-subroutine mld_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
+subroutine amg_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
      & coo_prol,desc_ac,coo_restr,info,desc_ax)
   use psb_base_mod
-  use mld_@X@_inner_mod
-  use mld_@X@_base_aggregator_mod!, mld_protect_name => mld_@LX@_ptap
+  use amg_@X@_inner_mod
+  use amg_@X@_base_aggregator_mod!, amg_protect_name => amg_@LX@_ptap
   implicit none
 
   ! Arguments
   type(psb_@LX@_csr_sparse_mat), intent(inout) :: a_csr
   type(psb_desc_type), intent(inout)           :: desc_a
   integer(psb_lpk_), intent(inout)           :: nlaggr(:)
-  type(mld_@RT@ml_parms), intent(inout)         :: parms 
+  type(amg_@RT@ml_parms), intent(inout)         :: parms 
   type(psb_@LX@_coo_sparse_mat), intent(inout)  :: coo_prol, coo_restr
   type(psb_desc_type), intent(inout)         :: desc_ac
   type(psb_@LX@spmat_type), intent(out)        :: ac
@@ -498,7 +498,7 @@ subroutine mld_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
   logical, parameter :: do_timings=.true., oldstyle=.false., debug=.false.  
   integer(psb_ipk_), save :: idx_spspmm=-1
 
-  name='mld_ptap'
+  name='amg_ptap'
   if(psb_get_errstatus().ne.0) return 
   info=psb_success_
   call psb_erractionsave(err_act)
@@ -686,4 +686,4 @@ contains
 
   end subroutine check_coo
   
-end subroutine mld_@LX@_ptap
+end subroutine amg_@LX@_ptap

@@ -1,14 +1,14 @@
 !   
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,9 +35,9 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@precset.f90
+! File: amg_@X@precset.f90
 !
-! Subroutine: mld_@X@precseti
+! Subroutine: amg_@X@precseti
 ! Version: @TYPE@
 !
 !  This routine sets the integer parameters defining the preconditioner. More
@@ -46,12 +46,12 @@
 !  For the multilevel preconditioners, the levels are numbered in increasing
 !  order starting from the finest one, i.e. level 1 is the finest level. 
 !
-!  To set character and @TYPE@ parameters, see mld_@X@precsetc and mld_@X@precsetr,
+!  To set character and @TYPE@ parameters, see amg_@X@precsetc and amg_@X@precsetr,
 !  respectively.
 !
 !
 ! Arguments:
-!    p       -  type(mld_@X@prec_type), input/output.
+!    p       -  type(amg_@X@prec_type), input/output.
 !               The preconditioner data structure.
 !    what    -  integer, input.
 !               The number identifying the parameter to be set.
@@ -72,40 +72,40 @@
 !  MLD2P4 developers. Indeed, by using ilev it is possible to set different values
 !  of the same parameter at different levels 1,...,nlev-1, even in cases where
 !  the parameter must have the same value at all the levels but the coarsest one.
-!  For this reason, the interface mld_precset to this routine has been built in
-!  such a way that ilev is not visible to the user (see mld_prec_mod.f90).
+!  For this reason, the interface amg_precset to this routine has been built in
+!  such a way that ilev is not visible to the user (see amg_prec_mod.f90).
 !   
-subroutine mld_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
+subroutine amg_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
 
   use psb_base_mod
-  use mld_@X@_prec_mod, mld_protect_name => mld_@X@cprecseti
-  use mld_@X@_jac_smoother
-  use mld_@X@_as_smoother
-  use mld_@X@_diag_solver
-  use mld_@X@_l1_diag_solver
-  use mld_@X@_ilu_solver
-  use mld_@X@_id_solver
-  use mld_@X@_gs_solver
+  use amg_@X@_prec_mod, amg_protect_name => amg_@X@cprecseti
+  use amg_@X@_jac_smoother
+  use amg_@X@_as_smoother
+  use amg_@X@_diag_solver
+  use amg_@X@_l1_diag_solver
+  use amg_@X@_ilu_solver
+  use amg_@X@_id_solver
+  use amg_@X@_gs_solver
 @DPKS@
 #if defined(HAVE_UMF_)
-  use mld_@X@_umf_solver
+  use amg_@X@_umf_solver
 #endif
 #if defined(HAVE_SLUDIST_)
-  use mld_@X@_sludist_solver
+  use amg_@X@_sludist_solver
 #endif
 @DPKE@  
 #if defined(HAVE_SLU_)
-  use mld_@X@_slu_solver
+  use amg_@X@_slu_solver
 #endif
 #if defined(HAVE_MUMPS_)  
-  use mld_@X@_mumps_solver
+  use amg_@X@_mumps_solver
 #endif
 
 
   implicit none
 
   ! Arguments
-  class(mld_@X@prec_type), intent(inout)    :: p
+  class(amg_@X@prec_type), intent(inout)    :: p
   character(len=*), intent(in)            :: what 
   integer(psb_ipk_), intent(in)           :: val
   integer(psb_ipk_), intent(out)          :: info
@@ -115,7 +115,7 @@ subroutine mld_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
 
   ! Local variables
   integer(psb_ipk_)                      :: ilev_, nlev_, ilmax_, il
-  character(len=*), parameter            :: name='mld_precseti'
+  character(len=*), parameter            :: name='amg_precseti'
 
   info = psb_success_
 
@@ -123,7 +123,7 @@ subroutine mld_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
     info = 3111
     write(psb_err_unit,*) name,&
          & ': Error: uninitialized preconditioner,',&
-         &' should call MLD_PRECINIT'
+         &' should call amg_PRECINIT'
     return 
   endif
 
@@ -199,152 +199,152 @@ subroutine mld_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
         if (nlev_ > 1) then 
           call p%precv(nlev_)%set('COARSE_SOLVE',val,info,pos=pos)
           select case (val) 
-          case(mld_bjac_,mld_l1_bjac_)
+          case(amg_bjac_,amg_l1_bjac_)
             call p%precv(nlev_)%set('SMOOTHER_TYPE',val,info,pos=pos)
 @DPKS@
 #if defined(HAVE_UMF_)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_umf_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_umf_,info,pos=pos)
 #elif defined(HAVE_SLU_)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
 #else
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
 #endif
 @DPKE@
 @SPKS@
 #if defined(HAVE_SLU_)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
 #else
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
 #endif
 @SPKE@
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info)
-          case(mld_slu_)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info)
+          case(amg_slu_)
 #if defined(HAVE_SLU_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
             call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
-          case(mld_ilu_n_, mld_ilu_t_,mld_milu_n_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+          case(psb_ilu_n_, psb_ilu_t_,psb_milu_n_)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
             call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
-          case(mld_mumps_)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
+          case(amg_mumps_)
 #if defined(HAVE_MUMPS_)          
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
             call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
 @DPKS@            
-         case(mld_umf_)
+         case(amg_umf_)
 #if defined(HAVE_UMF_)  
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
             call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_SLU_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
           
-          case(mld_sludist_)
+          case(amg_sludist_)
 #if defined(HAVE_SLUDIST_) 
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
             call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #elif defined(HAVE_UMF_)  
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_umf_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_umf_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_SLU_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
 @DPKE@
 @SPKS@            
-         case(mld_umf_)
+         case(amg_umf_)
 #if defined(HAVE_SLU_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
           
-          case(mld_sludist_)
+          case(amg_sludist_)
 #if defined(HAVE_SLU_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
 @SPKE@
-          case(mld_jac_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_diag_scale_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          case(amg_jac_)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_diag_scale_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 
-          case(mld_l1_jac_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_l1_diag_scale_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
-          case(mld_gs_,mld_fbgs_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_gs_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
-          case(mld_bwgs_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_bwgs_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
-          case(mld_l1_gs_,mld_l1_fbgs_)
-            call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_l1_bjac_,info,pos=pos)
-            call p%precv(nlev_)%set('SUB_SOLVE',mld_gs_,info,pos=pos)
-            call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          case(amg_l1_jac_)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_l1_diag_scale_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
+          case(amg_gs_,amg_fbgs_)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_gs_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
+          case(amg_bwgs_)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_bwgs_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
+          case(amg_l1_gs_,amg_l1_fbgs_)
+            call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_l1_bjac_,info,pos=pos)
+            call p%precv(nlev_)%set('SUB_SOLVE',amg_gs_,info,pos=pos)
+            call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
           end select
           
         endif
@@ -403,152 +403,152 @@ subroutine mld_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
       if (nlev_ > 1) then 
         call p%precv(nlev_)%set('COARSE_SOLVE',val,info,pos=pos)
         select case (val) 
-        case(mld_bjac_,mld_l1_bjac_)
+        case(amg_bjac_,amg_l1_bjac_)
           call p%precv(nlev_)%set('SMOOTHER_TYPE',val,info,pos=pos)
 @DPKS@
 #if defined(HAVE_UMF_)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_umf_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_umf_,info,pos=pos)
 #elif defined(HAVE_SLU_)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
 #else
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
 #endif
 @DPKE@
 @SPKS@
 #if defined(HAVE_SLU_)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
 #else
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
 #endif
 @SPKE@
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info)
-        case(mld_slu_)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info)
+        case(amg_slu_)
 #if defined(HAVE_SLU_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
           call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
-        case(mld_ilu_n_, mld_ilu_t_,mld_milu_n_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+        case(psb_ilu_n_, psb_ilu_t_,psb_milu_n_)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
           call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
-        case(mld_mumps_)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
+        case(amg_mumps_)
 #if defined(HAVE_MUMPS_)          
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
           call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
 @DPKS@            
-       case(mld_umf_)
+       case(amg_umf_)
 #if defined(HAVE_UMF_)  
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
           call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_SLU_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
           
-        case(mld_sludist_)
+        case(amg_sludist_)
 #if defined(HAVE_SLUDIST_) 
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
           call p%precv(nlev_)%set('SUB_SOLVE',val,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #elif defined(HAVE_UMF_)  
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_umf_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_umf_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_SLU_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
 @DPKE@
 @SPKS@            
-       case(mld_umf_)
+       case(amg_umf_)
 #if defined(HAVE_SLU_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
           
-        case(mld_sludist_)
+        case(amg_sludist_)
 #if defined(HAVE_SLU_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_slu_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_repl_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_slu_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_repl_mat_,info,pos=pos)
 #elif defined(HAVE_MUMPS_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_mumps_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_mumps_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #else 
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_ilu_n_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',psb_ilu_n_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 #endif
 @SPKE@
-        case(mld_jac_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_diag_scale_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+        case(amg_jac_)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_diag_scale_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
 
-        case(mld_l1_jac_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_l1_diag_scale_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
-        case(mld_gs_,mld_fbgs_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_gs_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
-        case(mld_bwgs_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_bwgs_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
-        case(mld_l1_gs_,mld_l1_fbgs_)
-          call p%precv(nlev_)%set('SMOOTHER_TYPE',mld_l1_bjac_,info,pos=pos)
-          call p%precv(nlev_)%set('SUB_SOLVE',mld_gs_,info,pos=pos)
-          call p%precv(nlev_)%set('COARSE_MAT',mld_distr_mat_,info,pos=pos)
+        case(amg_l1_jac_)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_l1_diag_scale_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
+        case(amg_gs_,amg_fbgs_)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_gs_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
+        case(amg_bwgs_)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_bwgs_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
+        case(amg_l1_gs_,amg_l1_fbgs_)
+          call p%precv(nlev_)%set('SMOOTHER_TYPE',amg_l1_bjac_,info,pos=pos)
+          call p%precv(nlev_)%set('SUB_SOLVE',amg_gs_,info,pos=pos)
+          call p%precv(nlev_)%set('COARSE_MAT',amg_distr_mat_,info,pos=pos)
         end select
       endif
 
@@ -576,10 +576,10 @@ subroutine mld_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
 
   endif
 
-end subroutine mld_@X@cprecseti
+end subroutine amg_@X@cprecseti
 
 !
-! Subroutine: mld_@X@precsetc
+! Subroutine: amg_@X@precsetc
 ! Version: @TYPE@
 !
 !  This routine sets the character parameters defining the preconditioner. More
@@ -588,12 +588,12 @@ end subroutine mld_@X@cprecseti
 !  For the multilevel preconditioners, the levels are numbered in increasing
 !  order starting from the finest one, i.e. level 1 is the finest level. 
 !
-!  To set integer and @TYPE@ parameters, see mld_@X@precseti and mld_@X@precsetr,
+!  To set integer and @TYPE@ parameters, see amg_@X@precseti and amg_@X@precsetr,
 !  respectively.
 !
 !
 ! Arguments:
-!    p       -  type(mld_@X@prec_type), input/output.
+!    p       -  type(amg_@X@prec_type), input/output.
 !               The preconditioner data structure.
 !    what    -  integer, input.
 !               The number identifying the parameter to be set.
@@ -614,40 +614,40 @@ end subroutine mld_@X@cprecseti
 !  MLD2P4 developers. Indeed, by using ilev it is possible to set different values
 !  of the same parameter at different levels 1,...,nlev-1, even in cases where
 !  the parameter must have the same value at all the levels but the coarsest one.
-!  For this reason, the interface mld_precset to this routine has been built in
-!  such a way that ilev is not visible to the user (see mld_prec_mod.f90).
+!  For this reason, the interface amg_precset to this routine has been built in
+!  such a way that ilev is not visible to the user (see amg_prec_mod.f90).
 !   
-subroutine mld_@X@cprecsetc(p,what,string,info,ilev,ilmax,pos,idx)
+subroutine amg_@X@cprecsetc(p,what,string,info,ilev,ilmax,pos,idx)
 
   use psb_base_mod
-  use mld_@X@_prec_mod, mld_protect_name => mld_@X@cprecsetc
-  use mld_@X@_jac_smoother
-  use mld_@X@_as_smoother
-  use mld_@X@_diag_solver
-  use mld_@X@_l1_diag_solver
-  use mld_@X@_ilu_solver
-  use mld_@X@_id_solver
-  use mld_@X@_gs_solver
+  use amg_@X@_prec_mod, amg_protect_name => amg_@X@cprecsetc
+  use amg_@X@_jac_smoother
+  use amg_@X@_as_smoother
+  use amg_@X@_diag_solver
+  use amg_@X@_l1_diag_solver
+  use amg_@X@_ilu_solver
+  use amg_@X@_id_solver
+  use amg_@X@_gs_solver
 @DPKS@
 #if defined(HAVE_UMF_)
-  use mld_@X@_umf_solver
+  use amg_@X@_umf_solver
 #endif
 #if defined(HAVE_SLUDIST_)
-  use mld_@X@_sludist_solver
+  use amg_@X@_sludist_solver
 #endif
 @DPKE@  
 #if defined(HAVE_SLU_)
-  use mld_@X@_slu_solver
+  use amg_@X@_slu_solver
 #endif
 #if defined(HAVE_MUMPS_)  
-  use mld_@X@_mumps_solver
+  use amg_@X@_mumps_solver
 #endif
 
 
   implicit none
 
   ! Arguments
-  class(mld_@X@prec_type), intent(inout)    :: p
+  class(amg_@X@prec_type), intent(inout)    :: p
   character(len=*), intent(in)            :: what 
   character(len=*), intent(in)            :: string
   integer(psb_ipk_), intent(out)          :: info
@@ -657,7 +657,7 @@ subroutine mld_@X@cprecsetc(p,what,string,info,ilev,ilmax,pos,idx)
 
   ! Local variables
   integer(psb_ipk_)                      :: ilev_, nlev_,val,ilmax_, il
-  character(len=*), parameter            :: name='mld_precsetc'
+  character(len=*), parameter            :: name='amg_precsetc'
 
   info = psb_success_
 
@@ -665,7 +665,7 @@ subroutine mld_@X@cprecsetc(p,what,string,info,ilev,ilmax,pos,idx)
     info = 3111
     write(psb_err_unit,*) name,&
          & ': Error: uninitialized preconditioner,',&
-         &' should call MLD_PRECINIT'
+         &' should call amg_PRECINIT'
     return 
   endif
 
@@ -1075,11 +1075,11 @@ subroutine mld_@X@cprecsetc(p,what,string,info,ilev,ilmax,pos,idx)
   endif
 
   
-end subroutine mld_@X@cprecsetc
+end subroutine amg_@X@cprecsetc
 
 
 !
-! Subroutine: mld_@X@precsetr
+! Subroutine: amg_@X@precsetr
 ! Version: @TYPE@
 !
 !  This routine sets the @TYPE@ parameters defining the preconditioner. More
@@ -1088,11 +1088,11 @@ end subroutine mld_@X@cprecsetc
 !  For the multilevel preconditioners, the levels are numbered in increasing
 !  order starting from the finest one, i.e. level 1 is the finest level. 
 !
-!  To set integer and character parameters, see mld_@X@precseti and mld_@X@precsetc,
+!  To set integer and character parameters, see amg_@X@precseti and amg_@X@precsetc,
 !  respectively.
 !
 ! Arguments:
-!    p       -  type(mld_@X@prec_type), input/output.
+!    p       -  type(amg_@X@prec_type), input/output.
 !               The preconditioner data structure.
 !    what    -  integer, input.
 !               The number identifying the parameter to be set.
@@ -1113,18 +1113,18 @@ end subroutine mld_@X@cprecsetc
 !  MLD2P4 developers. Indeed, by using ilev it is possible to set different values
 !  of the same parameter at different levels 1,...,nlev-1, even in cases where
 !  the parameter must have the same value at all the levels but the coarsest one.
-!  For this reason, the interface mld_precset to this routine has been built in
-!  such a way that ilev is not visible to the user (see mld_prec_mod.f90).
+!  For this reason, the interface amg_precset to this routine has been built in
+!  such a way that ilev is not visible to the user (see amg_prec_mod.f90).
 !   
-subroutine mld_@X@cprecsetr(p,what,val,info,ilev,ilmax,pos,idx)
+subroutine amg_@X@cprecsetr(p,what,val,info,ilev,ilmax,pos,idx)
 
   use psb_base_mod
-  use mld_@X@_prec_mod, mld_protect_name => mld_@X@cprecsetr
+  use amg_@X@_prec_mod, amg_protect_name => amg_@X@cprecsetr
 
   implicit none
 
   ! Arguments
-  class(mld_@X@prec_type), intent(inout)    :: p
+  class(amg_@X@prec_type), intent(inout)    :: p
   character(len=*), intent(in)            :: what 
   @RTYPE@(@FKIND@), intent(in)              :: val
   integer(psb_ipk_), intent(out)          :: info
@@ -1135,7 +1135,7 @@ subroutine mld_@X@cprecsetr(p,what,val,info,ilev,ilmax,pos,idx)
   ! Local variables
   integer(psb_ipk_)                      :: ilev_,nlev_, ilmax_, il
   @RTYPE@(@FKIND@)                         :: thr 
-  character(len=*), parameter            :: name='mld_precsetr'
+  character(len=*), parameter            :: name='amg_precsetr'
 
   info = psb_success_
 
@@ -1154,7 +1154,7 @@ subroutine mld_@X@cprecsetr(p,what,val,info,ilev,ilmax,pos,idx)
   if (.not.allocated(p%precv)) then 
     write(psb_err_unit,*) name,&
          &': Error: uninitialized preconditioner,',&
-         &' should call MLD_PRECINIT' 
+         &' should call amg_PRECINIT' 
     info = 3111
     return 
   endif
@@ -1213,6 +1213,6 @@ subroutine mld_@X@cprecsetr(p,what,val,info,ilev,ilmax,pos,idx)
 
   endif
 
-end subroutine mld_@X@cprecsetr
+end subroutine amg_@X@cprecsetr
 
 

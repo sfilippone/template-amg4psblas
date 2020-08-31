@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,9 +35,9 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@_dec_aggregator_tprol.f90
+! File: amg_@X@_dec_aggregator_tprol.f90
 !
-! Subroutine: mld_@X@_dec_aggregator_tprol
+! Subroutine: amg_@X@_dec_aggregator_tprol
 ! Version:    @TYPE@
 !
 !  This routine is mainly an interface to soc_map_bld where the real work is performed. 
@@ -47,7 +47,7 @@
 !
 ! 
 ! Arguments:
-!    ag      -  type(mld_@X@_dec_aggregator_type), input/output.
+!    ag      -  type(amg_@X@_dec_aggregator_type), input/output.
 !               The aggregator object, carrying with itself the mapping algorithm.
 !    parms   -  The auxiliary parameters object
 !    ag_data -  Auxiliary global aggregation parameters object
@@ -74,15 +74,15 @@
 !    info    -  integer, output.
 !               Error code.         
 !  
-subroutine  mld_@X@_dec_aggregator_build_tprol(ag,parms,ag_data,&
+subroutine  amg_@X@_dec_aggregator_build_tprol(ag,parms,ag_data,&
      & a,desc_a,ilaggr,nlaggr,t_prol,info)
   use psb_base_mod
-  use mld_@X@_prec_type, mld_protect_name => mld_@X@_dec_aggregator_build_tprol
-  use mld_@X@_inner_mod
+  use amg_@X@_prec_type, amg_protect_name => amg_@X@_dec_aggregator_build_tprol
+  use amg_@X@_inner_mod
   implicit none
-  class(mld_@X@_dec_aggregator_type), target, intent(inout) :: ag
-  type(mld_@RT@ml_parms), intent(inout)  :: parms 
-  type(mld_@RT@aggr_data), intent(in)    :: ag_data
+  class(amg_@X@_dec_aggregator_type), target, intent(inout) :: ag
+  type(amg_@RT@ml_parms), intent(inout)  :: parms 
+  type(amg_@RT@aggr_data), intent(in)    :: ag_data
   type(psb_@X@spmat_type), intent(in)   :: a
   type(psb_desc_type), intent(in)     :: desc_a
   integer(psb_lpk_), allocatable, intent(out) :: ilaggr(:),nlaggr(:)
@@ -97,7 +97,7 @@ subroutine  mld_@X@_dec_aggregator_build_tprol(ag,parms,ag_data,&
   integer(psb_ipk_)           :: debug_level, debug_unit
   logical                      :: clean_zeros
 
-  name='mld_@X@_dec_aggregator_tprol'
+  name='amg_@X@_dec_aggregator_tprol'
   call psb_erractionsave(err_act)
   if (psb_errstatus_fatal()) then
     info = psb_err_internal_error_; goto 9999
@@ -108,13 +108,13 @@ subroutine  mld_@X@_dec_aggregator_build_tprol(ag,parms,ag_data,&
   ictxt = desc_a%get_context()
   call psb_info(ictxt,me,np)
 
-  call mld_check_def(parms%ml_cycle,'Multilevel cycle',&
-       &   mld_mult_ml_,is_legal_ml_cycle)
-  call mld_check_def(parms%par_aggr_alg,'Aggregation',&
-       &   mld_dec_aggr_,is_legal_ml_par_aggr_alg)
-  call mld_check_def(parms%aggr_ord,'Ordering',&
-       &   mld_aggr_ord_nat_,is_legal_ml_aggr_ord)
-  call mld_check_def(parms%aggr_thresh,'Aggr_Thresh',@RZERO@,is_legal_@RT@_aggr_thrs)
+  call amg_check_def(parms%ml_cycle,'Multilevel cycle',&
+       &   amg_mult_ml_,is_legal_ml_cycle)
+  call amg_check_def(parms%par_aggr_alg,'Aggregation',&
+       &   amg_dec_aggr_,is_legal_ml_par_aggr_alg)
+  call amg_check_def(parms%aggr_ord,'Ordering',&
+       &   amg_aggr_ord_nat_,is_legal_ml_aggr_ord)
+  call amg_check_def(parms%aggr_thresh,'Aggr_Thresh',@RZERO@,is_legal_@RT@_aggr_thrs)
 
   !
   ! The decoupled aggregator based on SOC measures ignores
@@ -123,7 +123,7 @@ subroutine  mld_@X@_dec_aggregator_build_tprol(ag,parms,ag_data,&
   clean_zeros = ag%do_clean_zeros
   call ag%soc_map_bld(parms%aggr_ord,parms%aggr_thresh,clean_zeros,a,desc_a,nlaggr,ilaggr,info)
 
-  if (info==psb_success_) call mld_map_to_tprol(desc_a,ilaggr,nlaggr,t_prol,info)
+  if (info==psb_success_) call amg_map_to_tprol(desc_a,ilaggr,nlaggr,t_prol,info)
   if (info /= psb_success_) then
     info=psb_err_from_subroutine_
     call psb_errpush(info,name,a_err='soc_map_bld/map_to_tprol')
@@ -136,4 +136,4 @@ subroutine  mld_@X@_dec_aggregator_build_tprol(ag,parms,ag_data,&
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine mld_@X@_dec_aggregator_build_tprol
+end subroutine amg_@X@_dec_aggregator_build_tprol

@@ -1,10 +1,10 @@
 !
 !
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !
-!    (C) Copyright 2008-2018
+!    (C) Copyright 2020
 !
 !        Salvatore Filippone
 !        Pasqua D'Ambra
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,17 +35,17 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !
 !
-subroutine mld_@X@_l1_jac_smoother_bld(a,desc_a,sm,info,amold,vmold,imold)
+subroutine amg_@X@_l1_jac_smoother_bld(a,desc_a,sm,info,amold,vmold,imold)
 
   use psb_base_mod
-  use mld_@X@_diag_solver
-  use mld_@X@_jac_smoother, mld_protect_name => mld_@X@_l1_jac_smoother_bld
+  use amg_@X@_diag_solver
+  use amg_@X@_jac_smoother, amg_protect_name => amg_@X@_l1_jac_smoother_bld
   Implicit None
 
   ! Arguments
   type(psb_@X@spmat_type), intent(in), target          :: a
   Type(psb_desc_type), Intent(inout)                 :: desc_a
-  class(mld_@X@_l1_jac_smoother_type), intent(inout)      :: sm
+  class(amg_@X@_l1_jac_smoother_type), intent(inout)      :: sm
   integer(psb_ipk_), intent(out)                     :: info
   class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
   class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
@@ -75,7 +75,7 @@ subroutine mld_@X@_l1_jac_smoother_bld(a,desc_a,sm,info,amold,vmold,imold)
   if( sm%checkres ) sm%pa => a
 
   select type (smsv => sm%sv)
-  class is (mld_@X@_diag_solver_type)
+  class is (amg_@X@_diag_solver_type)
     call sm%nd%free()
     sm%pa => a
     sm%nd_nnz_tot = nztota
@@ -173,4 +173,4 @@ contains
   end subroutine combine_dl1
 
 
-end subroutine mld_@X@_l1_jac_smoother_bld
+end subroutine amg_@X@_l1_jac_smoother_bld

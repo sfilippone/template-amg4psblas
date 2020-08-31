@@ -1,14 +1,14 @@
 !   
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
 !               based on PSBLAS (Parallel Sparse BLAS version 3.5)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2020 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,9 +35,9 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@aggrmat_minnrg_bld.F90
+! File: amg_@X@aggrmat_minnrg_bld.F90
 !
-! Subroutine: mld_@X@aggrmat_minnrg_bld
+! Subroutine: amg_@X@aggrmat_minnrg_bld
 ! Version:    @TYPE@
 !
 !  This routine builds a coarse-level matrix A_C from a fine-level matrix A
@@ -50,7 +50,7 @@
 !  The prolongator P_C is built according to a smoothed aggregation algorithm,
 !  i.e. it is obtained by applying a damped Jacobi smoother to the piecewise
 !  constant interpolation operator P corresponding to the fine-to-coarse level 
-!  mapping built by the mld_aggrmap_bld subroutine:
+!  mapping built by the amg_aggrmap_bld subroutine:
 !
 !                            P_C = (I - omega*D^(-1)A) * P,
 !
@@ -58,7 +58,7 @@
 !  of A, and omega is a suitable smoothing parameter. An estimate of the spectral
 !  radius of D^(-1)A, to be used in the computation of omega, is provided, 
 !  according to the value of p%parms%aggr_omega_alg, specified by the user
-!  through mld_@X@precinit and mld_@X@precset.
+!  through amg_@X@precinit and amg_@X@precset.
 !  4. Minimum energy aggregation:
 !    M. Sala, R. Tuminaro: A new Petrov-Galerkin smoothed aggregation preconditioner
 !    for nonsymmetric linear systems, SIAM J. Sci. Comput., 31(1):143-166 (2008)
@@ -74,11 +74,11 @@
 !                  the fine-level matrix.
 !    desc_a     -  type(psb_desc_type), input.
 !                  The communication descriptor of the fine-level matrix.
-!    p          -  type(mld_@X@_onelev_type), input/output.
+!    p          -  type(amg_@X@_onelev_type), input/output.
 !                  The 'one-level' data structure that will contain the local
 !                  part of the matrix to be built as well as the information
 !                  concerning the prolongator and its transpose.
-!    parms      -   type(mld_@RT@ml_parms), input
+!    parms      -   type(amg_@RT@ml_parms), input
 !                  Parameters controlling the choice of algorithm
 !    ac         -  type(psb_@X@spmat_type), output
 !                  The coarse matrix on output 
@@ -104,11 +104,11 @@
 !                  Error code.
 !
 !
-subroutine mld_@X@aggrmat_minnrg_bld(a,desc_a,ilaggr,nlaggr,parms,&
+subroutine amg_@X@aggrmat_minnrg_bld(a,desc_a,ilaggr,nlaggr,parms,&
      & ac,desc_ac,op_prol,op_restr,info)
   use psb_base_mod
-  use mld_base_prec_type
-  use mld_@X@_inner_mod, mld_protect_name => mld_@X@aggrmat_minnrg_bld
+  use amg_base_prec_type
+  use amg_@X@_inner_mod, amg_protect_name => amg_@X@aggrmat_minnrg_bld
 
   implicit none
 
@@ -116,7 +116,7 @@ subroutine mld_@X@aggrmat_minnrg_bld(a,desc_a,ilaggr,nlaggr,parms,&
   type(psb_@X@spmat_type), intent(in)           :: a
   type(psb_desc_type), intent(inout)            :: desc_a
   integer(psb_lpk_), intent(inout)              :: ilaggr(:), nlaggr(:)
-  type(mld_@RT@ml_parms), intent(inout)         :: parms 
+  type(amg_@RT@ml_parms), intent(inout)         :: parms 
   type(psb_@LX@spmat_type), intent(inout)       :: op_prol
   type(psb_@LX@spmat_type), intent(out)         :: ac,op_restr
   type(psb_desc_type), intent(inout)            :: desc_ac
@@ -142,7 +142,7 @@ subroutine mld_@X@aggrmat_minnrg_bld(a,desc_a,ilaggr,nlaggr,parms,&
   real(@FKIND@)              :: anorm, theta
   @TYPE@(@FKIND@)            :: tmp, alpha, beta, ommx
 
-  name='mld_aggrmat_minnrg'
+  name='amg_aggrmat_minnrg'
   info=psb_success_
   call psb_erractionsave(err_act)
   if (psb_errstatus_fatal()) then
@@ -169,7 +169,7 @@ subroutine mld_@X@aggrmat_minnrg_bld(a,desc_a,ilaggr,nlaggr,parms,&
   naggrm1 = sum(nlaggr(1:me))
   naggrp1 = sum(nlaggr(1:me+1))
 
-  filter_mat = (parms%aggr_filter == mld_filter_mat_)
+  filter_mat = (parms%aggr_filter == amg_filter_mat_)
 
   ! naggr: number of local aggregates
   ! nrow: local rows. 
@@ -653,4 +653,4 @@ contains
     close(20+me)
   end subroutine local_dump
 
-end subroutine mld_@X@aggrmat_minnrg_bld 
+end subroutine amg_@X@aggrmat_minnrg_bld 

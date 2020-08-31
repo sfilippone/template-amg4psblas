@@ -13,8 +13,8 @@ SRC=X_base_onelev_check.p90 X_base_onelev_descr.p90 X_base_onelev_dump.p90 \
     X_base_onelev_mat_asb.p90
 
 
-FSRC1=$(patsubst %.p90, %.f90, $(subst X, mld_$(ARITH), $(filter %.p90, $(SRC))))
-FSRC2=$(patsubst %.P90, %.F90, $(subst X, mld_$(ARITH), $(filter %.P90, $(SRC))))
+FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
+FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
 FOBJS1=$(FSRC1:.f90=.o)
 FOBJS2=$(FSRC2:.F90=.o)
@@ -57,9 +57,9 @@ cpy:
 
 
 
-$(FSRC1): mld_$(ARITH)%.f90 : X%.p90
+$(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../../../$(ARITH).sed $< >$@
-$(FSRC2): mld_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
 	sed -f ../../../$(ARITH).sed $< >$@
 
 clean:

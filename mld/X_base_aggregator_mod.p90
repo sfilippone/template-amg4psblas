@@ -135,36 +135,6 @@ module amg_@X@_base_aggregator_mod
       integer(psb_ipk_), intent(out)             :: info
       type(psb_desc_type), intent(inout), optional :: desc_ax
     end subroutine amg_@X@_ptap
-!!$    subroutine amg_@X@_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
-!!$         & coo_prol,desc_cprol,coo_restr,info,desc_ax)
-!!$      import :: psb_@X@_csr_sparse_mat, psb_@LX@spmat_type, psb_desc_type, &
-!!$           & psb_@LX@_coo_sparse_mat, amg_@RT@ml_parms, @FKIND@, psb_ipk_, psb_lpk_
-!!$      implicit none
-!!$      type(psb_@X@_csr_sparse_mat), intent(inout) :: a_csr
-!!$      type(psb_desc_type), intent(in)            :: desc_a
-!!$      integer(psb_lpk_), intent(inout)           :: nlaggr(:)
-!!$      type(amg_@RT@ml_parms), intent(inout)         :: parms 
-!!$      type(psb_@LX@_coo_sparse_mat), intent(inout) :: coo_prol, coo_restr
-!!$      type(psb_desc_type), intent(inout)         :: desc_cprol
-!!$      type(psb_@LX@spmat_type), intent(out)        :: ac
-!!$      integer(psb_ipk_), intent(out)             :: info
-!!$      type(psb_desc_type), intent(inout), optional :: desc_ax
-!!$    end subroutine amg_@X@_@LX@_ptap
-!!$    subroutine amg_@LX@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
-!!$         & coo_prol,desc_cprol,coo_restr,info,desc_ax)
-!!$      import :: psb_@LX@_csr_sparse_mat, psb_@LX@spmat_type, psb_desc_type, &
-!!$           & psb_@LX@_coo_sparse_mat, amg_@RT@ml_parms, @FKIND@, psb_ipk_, psb_lpk_
-!!$      implicit none
-!!$      type(psb_@LX@_csr_sparse_mat), intent(inout) :: a_csr
-!!$      type(psb_desc_type), intent(in)            :: desc_a
-!!$      integer(psb_lpk_), intent(inout)           :: nlaggr(:)
-!!$      type(amg_@RT@ml_parms), intent(inout)         :: parms 
-!!$      type(psb_@LX@_coo_sparse_mat), intent(inout) :: coo_prol, coo_restr
-!!$      type(psb_desc_type), intent(inout)         :: desc_cprol
-!!$      type(psb_@LX@spmat_type), intent(out)        :: ac
-!!$      integer(psb_ipk_), intent(out)             :: info
-!!$      type(psb_desc_type), intent(inout), optional :: desc_ax
-!!$    end subroutine amg_@LX@_ptap
   end interface amg_ptap
   
 contains

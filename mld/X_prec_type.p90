@@ -133,8 +133,9 @@ module amg_@X@_prec_type
     procedure, pass(prec)               :: move_alloc   => @X@_prec_move_alloc
     procedure, pass(prec)               :: init         => amg_@X@precinit
     procedure, pass(prec)               :: build        => amg_@X@precbld
-    procedure, pass(prec)               :: hierarchy_build  => amg_@X@_hierarchy_bld
-    procedure, pass(prec)               :: smoothers_build  => amg_@X@_smoothers_bld
+    procedure, pass(prec)               :: hierarchy_build   => amg_@X@_hierarchy_bld
+    procedure, pass(prec)               :: hierarchy_rebuild => amg_@X@_hierarchy_rebld
+    procedure, pass(prec)               :: smoothers_build   => amg_@X@_smoothers_bld
     procedure, pass(prec)               :: descr        =>  amg_@X@file_prec_descr
   end type amg_@X@prec_type
 
@@ -310,6 +311,19 @@ module amg_@X@_prec_type
       !      character, intent(in),optional             :: upd
     end subroutine amg_@X@_hierarchy_bld
   end interface amg_hierarchy_bld
+
+  interface amg_hierarchy_rebld
+    subroutine amg_@X@_hierarchy_rebld(a,desc_a,prec,info)
+      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
+           & amg_@X@prec_type, psb_ipk_
+      implicit none
+      type(psb_@X@spmat_type), intent(in), target          :: a
+      type(psb_desc_type), intent(inout), target           :: desc_a
+      class(amg_@X@prec_type), intent(inout), target        :: prec
+      integer(psb_ipk_), intent(out)                       :: info
+      !      character, intent(in),optional             :: upd
+    end subroutine amg_@X@_hierarchy_rebld
+  end interface amg_hierarchy_rebld
 
   interface amg_smoothers_bld
     subroutine amg_@X@_smoothers_bld(a,desc_a,prec,info,amold,vmold,imold)

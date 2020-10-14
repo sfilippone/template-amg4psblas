@@ -1,1 +1,1 @@
-TARGET=../a4p
+TARGET=../amg4psblas

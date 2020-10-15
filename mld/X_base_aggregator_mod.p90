@@ -137,8 +137,8 @@ module amg_@X@_base_aggregator_mod
     end subroutine amg_@X@_ptap_bld
   end interface amg_ptap_bld
 
-  interface amg_ptap
-    subroutine amg_@X@_ptap(a_csr,desc_a,nlaggr,parms,ac,&
+  interface amg_rap
+    subroutine amg_@X@_rap(a_csr,desc_a,nlaggr,parms,ac,&
          & coo_prol,desc_cprol,coo_restr,info)
       import :: psb_@X@_csr_sparse_mat, psb_@X@spmat_type, psb_desc_type, &
            & psb_@X@_coo_sparse_mat, amg_@RT@ml_parms, @FKIND@, psb_ipk_, psb_lpk_
@@ -151,8 +151,8 @@ module amg_@X@_base_aggregator_mod
       type(psb_desc_type), intent(inout)         :: desc_cprol
       type(psb_@X@spmat_type), intent(out)        :: ac
       integer(psb_ipk_), intent(out)             :: info
-    end subroutine amg_@X@_ptap
-  end interface amg_ptap
+    end subroutine amg_@X@_rap
+  end interface amg_rap
   
 contains
 

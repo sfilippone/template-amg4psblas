@@ -67,7 +67,7 @@ bsrc: $(FSRC)
 lib: $(FOBJS)
 
 cpy:
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/mlprec/impl/smoother *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/smoother *.f90 *.F90)
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90

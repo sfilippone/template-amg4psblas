@@ -69,7 +69,7 @@ bsrc: $(FSRC)
 lib: $(FOBJS)
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/mlprec/impl/solver *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/solver *.f90 *.F90)
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90

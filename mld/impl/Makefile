@@ -62,7 +62,7 @@ bsrc: $(FSRC)
 lib: $(FOBJS)
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/mlprec/impl *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl *.f90 *.F90)
 	cd aggregator && $(MAKE) cpy
 	cd level && $(MAKE) cpy
 	cd smoother && $(MAKE) cpy

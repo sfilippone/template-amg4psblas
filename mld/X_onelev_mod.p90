@@ -411,6 +411,53 @@ interface
       logical, optional, intent(in)    :: ac, rp, smoother, solver, tprol, global_num
     end subroutine amg_@X@_base_onelev_dump
   end interface
+
+  interface
+    subroutine amg_@X@_base_onelev_map_rstr_a(lv,alpha,u,beta,v,info,work)
+      import
+      implicit none
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv
+      @TYPE@(@FKIND@), intent(in)     :: alpha, beta
+      @TYPE@(@FKIND@), intent(inout)   :: u(:)
+      @TYPE@(@FKIND@), intent(out)     :: v(:)
+      integer(psb_ipk_), intent(out) :: info
+      @TYPE@(@FKIND@), optional       :: work(:)
+    end subroutine amg_@X@_base_onelev_map_rstr_a
+    subroutine amg_@X@_base_onelev_map_rstr_v(lv,alpha,vect_u,beta,vect_v,info,work,vtx,vty)
+      import
+      implicit none
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv
+      @TYPE@(@FKIND@), intent(in)           :: alpha, beta
+      type(psb_@X@_vect_type), intent(inout) :: vect_u, vect_v
+      integer(psb_ipk_), intent(out)       :: info
+      @TYPE@(@FKIND@), optional          :: work(:)
+      type(psb_@X@_vect_type), optional, target, intent(inout)  :: vtx,vty
+    end subroutine amg_@X@_base_onelev_map_rstr_v
+  end interface
+
+  interface 
+    subroutine amg_@X@_base_onelev_map_prol_a(lv,alpha,v,beta,u,info,work)
+      import
+      implicit none
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv
+      @TYPE@(@FKIND@), intent(in)     :: alpha, beta
+      @TYPE@(@FKIND@), intent(inout)   :: u(:)
+      @TYPE@(@FKIND@), intent(out)     :: v(:)
+      integer(psb_ipk_), intent(out) :: info
+      @TYPE@(@FKIND@), optional          :: work(:)
+
+    end subroutine amg_@X@_base_onelev_map_prol_a
+    subroutine amg_@X@_base_onelev_map_prol_v(lv,alpha,vect_v,beta,vect_u,info,work,vtx,vty)
+      import
+      implicit none
+      class(amg_@X@_onelev_type), target, intent(inout) :: lv
+      @TYPE@(@FKIND@), intent(in)           :: alpha, beta
+      type(psb_@X@_vect_type), intent(inout) :: vect_u, vect_v
+      integer(psb_ipk_), intent(out)       :: info
+      @TYPE@(@FKIND@), optional          :: work(:)
+      type(psb_@X@_vect_type), optional, target, intent(inout)  :: vtx,vty
+    end subroutine amg_@X@_base_onelev_map_prol_v
+  end interface
   
 contains
   !
@@ -839,94 +886,6 @@ contains
     end if
   end function @X@_wrk_sizeof
  
-  subroutine amg_@X@_base_onelev_map_rstr_a(lv,alpha,u,beta,v,info,work)
-    implicit none
-    class(amg_@X@_onelev_type), target, intent(inout) :: lv
-    @TYPE@(@FKIND@), intent(in)     :: alpha, beta
-    @TYPE@(@FKIND@), intent(inout)   :: u(:)
-    @TYPE@(@FKIND@), intent(out)     :: v(:)
-    integer(psb_ipk_), intent(out) :: info
-    @TYPE@(@FKIND@), optional       :: work(:)
-
-    if (lv%remap_data%ac_pre_remap%is_asb()) then
-      !
-      ! Remap has happened, deal with it
-      !
-      write(0,*) 'Remap handling not implemented yet '
-    else
-      ! Default transfer
-        call lv%linmap%map_U2V(alpha,u,beta,v,info,&
-             & work=work)
-    end if
-
-  end subroutine amg_@X@_base_onelev_map_rstr_a
-  
-  subroutine amg_@X@_base_onelev_map_prol_a(lv,alpha,v,beta,u,info,work)
-    implicit none
-    class(amg_@X@_onelev_type), target, intent(inout) :: lv
-    @TYPE@(@FKIND@), intent(in)     :: alpha, beta
-    @TYPE@(@FKIND@), intent(inout)   :: u(:)
-    @TYPE@(@FKIND@), intent(out)     :: v(:)
-    integer(psb_ipk_), intent(out) :: info
-    @TYPE@(@FKIND@), optional          :: work(:)
-
-    if (lv%remap_data%ac_pre_remap%is_asb()) then
-      !
-      ! Remap has happened, deal with it
-      !
-      write(0,*) 'Remap handling not implemented yet '
-    else
-      ! Default transfer
-        call lv%linmap%map_V2U(alpha,v,beta,u,info,&
-             & work=work)
-    end if
-
-  end subroutine amg_@X@_base_onelev_map_prol_a
-
-  subroutine amg_@X@_base_onelev_map_rstr_v(lv,alpha,vect_u,beta,vect_v,info,work,vtx,vty)
-    implicit none
-    class(amg_@X@_onelev_type), target, intent(inout) :: lv
-    @TYPE@(@FKIND@), intent(in)           :: alpha, beta
-    type(psb_@X@_vect_type), intent(inout) :: vect_u, vect_v
-    integer(psb_ipk_), intent(out)       :: info
-    @TYPE@(@FKIND@), optional          :: work(:)
-    type(psb_@X@_vect_type), optional, target, intent(inout)  :: vtx,vty
-
-    if (lv%remap_data%ac_pre_remap%is_asb()) then
-      !
-      ! Remap has happened, deal with it
-      !
-      write(0,*) 'Remap handling not implemented yet '
-    else
-      ! Default transfer
-        call lv%linmap%map_U2V(alpha,vect_u,beta,vect_v,info,&
-             & work=work,vtx=vtx,vty=vty)
-    end if
-
-  end subroutine amg_@X@_base_onelev_map_rstr_v
-  
-  subroutine amg_@X@_base_onelev_map_prol_v(lv,alpha,vect_v,beta,vect_u,info,work,vtx,vty)
-    implicit none
-    class(amg_@X@_onelev_type), target, intent(inout) :: lv
-    @TYPE@(@FKIND@), intent(in)           :: alpha, beta
-    type(psb_@X@_vect_type), intent(inout) :: vect_u, vect_v
-    integer(psb_ipk_), intent(out)       :: info
-    @TYPE@(@FKIND@), optional          :: work(:)
-    type(psb_@X@_vect_type), optional, target, intent(inout)  :: vtx,vty
-
-    if (lv%remap_data%ac_pre_remap%is_asb()) then
-      !
-      ! Remap has happened, deal with it
-      !
-      write(0,*) 'Remap handling not implemented yet '
-    else
-      ! Default transfer
-        call lv%linmap%map_V2U(alpha,vect_v,beta,vect_u,info,&
-             & work=work,vtx=vtx,vty=vty)
-    end if
-
-  end subroutine amg_@X@_base_onelev_map_prol_v
-
   subroutine @X@_remap_data_clone(rmp, remap_out, info)
     use psb_base_mod
     implicit none 

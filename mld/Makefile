@@ -50,7 +50,7 @@ iclean:
 
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/mlprec *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec *.f90 *.F90)
 	cd impl && $(MAKE) cpy
 
 

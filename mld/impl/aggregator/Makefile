@@ -50,7 +50,7 @@ dcompl:
 	$(MAKE) lib ARITH=z
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/mlprec/impl/aggregator *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/aggregator *.f90 *.F90)
 
 
 bsrc: $(FSRC)

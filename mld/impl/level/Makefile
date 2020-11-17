@@ -53,7 +53,7 @@ bsrc: $(FSRC)
 lib: $(FOBJS)
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/mlprec/impl/level *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/level *.f90 *.F90)
 
 
 

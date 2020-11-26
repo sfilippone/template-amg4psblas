@@ -58,7 +58,7 @@ subroutine amg_@X@_invt_solver_setr(sv,what,val,info)
   case(amg_inv_thresh_)
     sv%inv_thresh = val
   case default
-    call sv%amg_@X@_base_solver_type%set(what,val,info)
+    ! call sv%amg_@X@_base_solver_type%set(what,val,info)
   end select
 
   call psb_erractionrestore(err_act)

@@ -55,9 +55,9 @@ subroutine amg_@X@_invt_solver_check(sv,info)
   call amg_check_def(sv%inv_fill,&
        & 'Level',izero,is_int_non_negative)
   call amg_check_def(sv%thresh,&
-       & 'Eps',dzero,is_legal_@RT@_fact_thrs)
+       & 'Eps',@RZERO@,is_legal_@RT@_fact_thrs)
   call amg_check_def(sv%inv_thresh,&
-       & 'Eps',dzero,is_legal_@RT@_fact_thrs)
+       & 'Eps',@RZERO@,is_legal_@RT@_fact_thrs)
 
   if (info /= psb_success_) goto 9999
 

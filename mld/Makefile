@@ -12,7 +12,8 @@ SRC=X_prec_type.p90 X_prec_mod.p90 \
   X_ilu_solver.p90 X_inner_mod.p90 X_ilu_fact_mod.p90 \
   X_umf_solver.P90 X_slu_solver.P90 X_sludist_solver.P90 X_gs_solver.p90 X_mumps_solver.P90\
   X_base_aggregator_mod.p90 \
-  X_dec_aggregator_mod.p90 X_symdec_aggregator_mod.p90
+  X_dec_aggregator_mod.p90 X_symdec_aggregator_mod.p90 \
+	X_ainv_solver.P90 X_base_ainv_mod.p90
 
 
 
@@ -49,7 +50,7 @@ iclean:
 	cd impl && $(MAKE) clean
 
 
-cpy: 
+cpy:
 	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec *.f90 *.F90)
 	cd impl && $(MAKE) cpy
 
@@ -81,10 +82,8 @@ X_base_smoother_mod.p90: X_base_solver_mod.p90
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../$(ARITH).sed $< >$@
-$(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90
 	sed -f ../$(ARITH).sed $< >$@
 
 clean: iclean
 	/bin/rm -f *.f90 *.F90 *.o
-
-

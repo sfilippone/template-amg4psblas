@@ -22,8 +22,14 @@ SRC=X_base_solver_apply.p90 X_base_solver_apply_vect.p90 \
     X_gs_solver_dmp.p90 X_gs_solver_clone.p90 X_gs_solver_cnv.p90 \
     X_gs_solver_clear_data.p90 X_gs_solver_clone_settings.p90 \
     X_bwgs_solver_bld.p90 X_bwgs_solver_apply.p90 X_bwgs_solver_apply_vect.p90 \
-    X_mumps_solver_bld.P90 X_mumps_solver_apply.P90 X_mumps_solver_apply_vect.P90 
-
+    X_mumps_solver_bld.P90 X_mumps_solver_apply.P90 X_mumps_solver_apply_vect.P90 \
+		X_ainv_solver_bld.p90 X_ainv_solver_check.p90 X_ainv_solver_clone.p90 \
+		X_ainv_solver_csetc.p90 X_ainv_solver_cseti.p90 X_ainv_solver_csetr.p90 \
+		X_ainv_solver_descr.p90 X_ainv_solver_setc.p90 X_ainv_solver_seti.p90 \
+		X_ainv_solver_setr.p90 \
+		X_base_ainv_solver_apply_vect.p90 X_base_ainv_solver_apply.p90 \
+		X_base_ainv_solver_cnv.p90 X_base_ainv_solver_dmp.p90 \
+		X_base_ainv_solver_free.p90 X_base_ainv_update_a.p90
 
 
 
@@ -68,15 +74,14 @@ bsrc: $(FSRC)
 
 lib: $(FOBJS)
 
-cpy: 
+cpy:
 	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/solver *.f90 *.F90)
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../../../$(ARITH).sed $< >$@
-$(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90
 	sed -f ../../../$(ARITH).sed $< >$@
 
 clean:
 	/bin/rm -f *.f90 *.F90 *.o
-

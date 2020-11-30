@@ -34,7 +34,8 @@ SRC=X_base_solver_apply.p90 X_base_solver_apply_vect.p90 \
 		X_invk_solver_cseti.p90 X_invk_solver_descr.p90 X_invk_solver_seti.p90 \
 		X_invt_solver_bld.p90 X_invt_solver_check.p90 X_invt_solver_clone.p90 \
 		X_invt_solver_cseti.p90 X_invt_solver_descr.p90 X_invt_solver_seti.p90 \
-		X_invt_solver_csetr.p90 X_invt_solver_setr.p90
+		X_invt_solver_csetr.p90 X_invt_solver_setr.p90 \
+		X_rkr_solver_impl.p90
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
 FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))

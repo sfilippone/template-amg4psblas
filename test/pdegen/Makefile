@@ -6,7 +6,11 @@ UTIL_MODS =
 
 MODULES=$(BASIC_MODS) $(UTIL_MODS)
 
-SRC=X_pde2d.p90 X_pde3d.p90
+SRC=	X_pde2d.p90 X_pde3d_base_mod.p90 X_pde2d_base_mod.p90 \
+			X_pde3d.p90 X_genpde_mod.p90 \
+			X_pde3d_exp_mod.p90 X_pde3d_gauss_mod.p90 \
+			X_pde2d_exp_mod.p90 X_pde2d_box_mod.p90 
+
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
 FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
@@ -22,7 +26,7 @@ CINCLUDES=-I.
 FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FIFLAG).
 
 
-src: ssingle sdouble 
+src: ssingle sdouble
 
 ssingle:
 	$(MAKE) bsrc ARITH=s
@@ -49,16 +53,14 @@ bsrc: $(FSRC)
 
 lib: $(FOBJS)
 
-cpy: 
+cpy:
 	($(TOP)/cpy.sh $(TOP) $(TARGET)/tests/pdegen *.f90 *.F90)
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f $(TOP)/$(ARITH).sed $< >$@
-$(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90
 	sed -f $(TOP)/$(ARITH).sed $< >$@
 
-clean:  
+clean:
 	/bin/rm -f *.f90 *.F90 *.o
-
-

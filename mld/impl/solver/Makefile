@@ -26,6 +26,7 @@ SRC=X_base_solver_apply.p90 X_base_solver_apply_vect.p90 \
     X_ainv_solver_bld.p90 X_ainv_solver_check.p90 X_ainv_solver_clone.p90 \
     X_ainv_solver_csetc.p90 X_ainv_solver_cseti.p90 X_ainv_solver_csetr.p90 \
     X_ainv_solver_descr.p90  \
+    X_krm_solver_impl.p90 \
     X_base_ainv_solver_apply_vect.p90 X_base_ainv_solver_apply.p90 \
     X_base_ainv_solver_cnv.p90 X_base_ainv_solver_dmp.p90 \
     X_base_ainv_solver_free.p90 X_base_ainv_update_a.p90 \

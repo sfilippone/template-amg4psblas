@@ -11,9 +11,9 @@ SRC=X_prec_type.p90 X_prec_mod.p90 \
   X_as_smoother.p90 X_jac_smoother.p90 X_diag_solver.p90 X_id_solver.p90\
   X_ilu_solver.p90 X_inner_mod.p90 X_ilu_fact_mod.p90 \
   X_umf_solver.P90 X_slu_solver.P90 X_sludist_solver.P90 X_gs_solver.p90 X_mumps_solver.P90\
-  X_base_aggregator_mod.p90 \
+  X_krm_solver.p90  X_base_aggregator_mod.p90 \
   X_dec_aggregator_mod.p90 X_symdec_aggregator_mod.p90 \
-	X_ainv_solver.P90 X_base_ainv_mod.p90 X_invk_solver.p90 X_invt_solver.p90
+  X_ainv_solver.P90 X_base_ainv_mod.p90 X_invk_solver.p90 X_invt_solver.p90
 
 
 

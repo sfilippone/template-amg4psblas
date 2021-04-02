@@ -10,7 +10,11 @@ MODULES=$(BASIC_MODS) $(UTIL_MODS)
 SRC= Xaggrmat_minnrg_bld.p90 Xaggrmat_nosmth_bld.p90 \
     Xaggrmat_smth_bld.p90 X_dec_aggregator_mat_bld.p90 X_dec_aggregator_tprol.p90 \
     X_soc1_map_bld.p90 X_soc2_map_bld.p90 X_map_to_tprol.p90 X_dec_aggregator_mat_asb.p90 \
-    X_symdec_aggregator_tprol.p90 X_rap.p90 X_ptap_bld.p90
+    X_symdec_aggregator_tprol.p90 X_rap.p90 X_ptap_bld.p90 \
+		X_parmatch_aggregator_mat_bld.p90 X_parmatch_aggregator_mat_asb.p90 \
+		X_parmatch_aggregator_inner_mat_asb.p90 X_parmatch_aggregator_tprol.p90 \
+		X_parmatch_spmm_bld.p90 X_parmatch_spmm_bld_ov.p90 X_parmatch_spmm_bld_inner.p90 \
+		X_parmatch_unsmth_bld.p90 X_parmatch_smth_bld.p90
 
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
@@ -49,7 +53,7 @@ complex:
 dcompl:
 	$(MAKE) lib ARITH=z
 
-cpy: 
+cpy:
 	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/aggregator *.f90 *.F90)
 
 
@@ -61,9 +65,8 @@ lib: $(FOBJS)
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../../../$(ARITH).sed $< >$@
-$(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90
 	sed -f ../../../$(ARITH).sed $< >$@
 
 clean:
 	/bin/rm -f *.f90 *.F90 *.o
-

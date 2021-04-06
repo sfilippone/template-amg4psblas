@@ -167,12 +167,12 @@ subroutine  amg_@X@_parmatch_aggregator_mat_bld(ag,parms,a,desc_a,ilaggr,nlaggr,
      & ac,desc_ac,op_prol,op_restr,t_prol,info)
   use psb_base_mod
   use amg_@X@_inner_mod
-  use amg_@X@_prec_type
+  use amg_base_prec_type
   use amg_@X@_parmatch_aggregator_mod, amg_protect_name => amg_@X@_parmatch_aggregator_mat_bld
   implicit none
 
   class(amg_@X@_parmatch_aggregator_type), target, intent(inout) :: ag
-  type(amg_@X@ml_parms), intent(inout)    :: parms
+  type(amg_@RT@ml_parms), intent(inout)    :: parms
   type(psb_@X@spmat_type), intent(in)     :: a
   type(psb_desc_type), intent(inout)    :: desc_a
   integer(psb_lpk_), intent(inout)      :: ilaggr(:), nlaggr(:)
@@ -189,7 +189,7 @@ subroutine  amg_@X@_parmatch_aggregator_mat_bld(ag,parms,a,desc_a,ilaggr,nlaggr,
   integer(psb_ipk_)     :: debug_level, debug_unit
   type(psb_@X@spmat_type) :: atmp
 
-  name='d_parmatch_mat_bld'
+  name='@X@_parmatch_mat_bld'
   if (psb_get_errstatus().ne.0) return
   call psb_erractionsave(err_act)
   debug_unit  = psb_get_debug_unit()

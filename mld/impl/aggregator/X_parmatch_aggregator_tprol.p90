@@ -112,14 +112,14 @@
 subroutine  amg_@X@_parmatch_aggregator_build_tprol(ag,parms,ag_data,&
      & a,desc_a,ilaggr,nlaggr,t_prol,info)
   use psb_base_mod
-  use amg_@X@_prec_type
+  use amg_base_prec_type
   use amg_@X@_inner_mod
   use amg_@X@_parmatch_aggregator_mod, amg_protect_name => amg_@X@_parmatch_aggregator_build_tprol
   use iso_c_binding
   implicit none
   class(amg_@X@_parmatch_aggregator_type), target, intent(inout) :: ag
-  type(amg_@X@ml_parms), intent(inout)   :: parms
-  type(amg_@X@aggr_data), intent(in)     :: ag_data
+  type(amg_@RT@ml_parms), intent(inout)   :: parms
+  type(amg_@RT@aggr_data), intent(in)     :: ag_data
   type(psb_@X@spmat_type), intent(inout) :: a
   type(psb_desc_type), intent(inout)   :: desc_a
   integer(psb_lpk_), allocatable, intent(out) :: ilaggr(:),nlaggr(:)
@@ -150,7 +150,7 @@ subroutine  amg_@X@_parmatch_aggregator_build_tprol(ag,parms,ag_data,&
   type(psb_@LX@spmat_type)              :: tmp_prol, tmp_pg, tmp_restr
   type(psb_desc_type)                 :: tmp_desc_ac, tmp_desc_ax, tmp_desc_p
   integer(psb_ipk_), save             :: idx_mboxp=-1, idx_spmmbld=-1, idx_sweeps_mult=-1
-  logical, parameter :: dump=.false., do_timings=.true., debug=.false., &
+  logical, parameter :: dump=.false., do_timings=.true., debug=.true., &
        & dump_prol_restr=.false.
 
   name='@X@_parmatch_tprol'

@@ -103,7 +103,7 @@ subroutine amg_@X@_parmatch_spmm_bld_ov(a,desc_a,ilaggr,nlaggr,parms,&
   type(psb_@X@spmat_type), intent(inout)    :: a
   type(psb_desc_type), intent(in)         :: desc_a
   integer(psb_lpk_), intent(inout)        :: ilaggr(:), nlaggr(:)
-  type(amg_@X@ml_parms), intent(inout)      :: parms
+  type(amg_@RT@ml_parms), intent(inout)      :: parms
   type(psb_@LX@spmat_type), intent(inout)   :: t_prol
   type(psb_@X@spmat_type), intent(inout)      :: ac, op_prol, op_restr
   type(psb_desc_type), intent(out)        :: desc_ac

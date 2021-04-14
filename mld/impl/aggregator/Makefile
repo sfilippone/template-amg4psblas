@@ -11,10 +11,10 @@ SRC= Xaggrmat_minnrg_bld.p90 Xaggrmat_nosmth_bld.p90 \
     Xaggrmat_smth_bld.p90 X_dec_aggregator_mat_bld.p90 X_dec_aggregator_tprol.p90 \
     X_soc1_map_bld.p90 X_soc2_map_bld.p90 X_map_to_tprol.p90 X_dec_aggregator_mat_asb.p90 \
     X_symdec_aggregator_tprol.p90 X_rap.p90 X_ptap_bld.p90 \
-		X_parmatch_aggregator_mat_bld.p90 X_parmatch_aggregator_mat_asb.p90 \
-		X_parmatch_aggregator_inner_mat_asb.p90 X_parmatch_aggregator_tprol.p90 \
-		X_parmatch_spmm_bld.p90 X_parmatch_spmm_bld_ov.p90 X_parmatch_spmm_bld_inner.p90 \
-		X_parmatch_unsmth_bld.p90 X_parmatch_smth_bld.p90
+    X_parmatch_aggregator_mat_bld.P90 X_parmatch_aggregator_mat_asb.P90 \
+    X_parmatch_aggregator_inner_mat_asb.P90 X_parmatch_aggregator_tprol.P90 \
+    X_parmatch_spmm_bld.P90 X_parmatch_spmm_bld_ov.P90 X_parmatch_spmm_bld_inner.P90 \
+    X_parmatch_unsmth_bld.P90 X_parmatch_smth_bld.P90
 
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))

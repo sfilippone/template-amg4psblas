@@ -1,14 +1,14 @@
 !
 !
-!                             AMG4PSBLAS  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !
-!    (C) Copyright 2008-2018
+!    (C) Copyright 2021
 !
 !        Salvatore Filippone
 !        Pasqua D'Ambra
-!        Daniela di Serafino
+!        Fabio Durastante
 !
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -33,7 +33,6 @@
 !    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
-!
 !
 ! File: amg_@X@_parmatch_unsmth_bld.F90
 !
@@ -108,7 +107,11 @@ subroutine amg_@X@_parmatch_unsmth_bld(ag,a,desc_a,ilaggr,nlaggr,parms,&
   use amg_base_prec_type
   use amg_@X@_inner_mod
   use amg_@X@_base_aggregator_mod
+#if defined(SERIAL_MPI)
+    use amg_@X@_parmatch_aggregator_mod
+#else
   use amg_@X@_parmatch_aggregator_mod, amg_protect_name => amg_@X@_parmatch_unsmth_bld
+#endif
   implicit none
 
   ! Arguments
@@ -157,6 +160,7 @@ subroutine amg_@X@_parmatch_unsmth_bld(ag,a,desc_a,ilaggr,nlaggr,parms,&
 
   call psb_info(ictxt, me, np)
 
+#if !defined(SERIAL_MPI)
   nglob = desc_a%get_global_rows()
   nrow  = desc_a%get_local_rows()
   ncol  = desc_a%get_local_cols()
@@ -224,7 +228,7 @@ subroutine amg_@X@_parmatch_unsmth_bld(ag,a,desc_a,ilaggr,nlaggr,parms,&
     goto 9999
   end if
 
-
+#endif
   call psb_erractionrestore(err_act)
   return
 

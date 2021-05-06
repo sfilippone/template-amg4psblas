@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,26 +35,27 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-subroutine mld_@X@_as_smoother_prol_v(sm,x,trans,work,info,data)
+subroutine amg_@X@_as_smoother_prol_v(sm,x,trans,work,info,data)
   use psb_base_mod
-  use mld_@X@_as_smoother, mld_protect_nam => mld_@X@_as_smoother_prol_v
+  use amg_@X@_as_smoother, amg_protect_nam => amg_@X@_as_smoother_prol_v
   implicit none 
-  class(mld_@X@_as_smoother_type), intent(inout) :: sm
+  class(amg_@X@_as_smoother_type), intent(inout) :: sm
   type(psb_@X@_vect_type),intent(inout)          :: x
   character(len=1),intent(in)                    :: trans
   @TYPE@(@FKIND@),target, intent(inout)          :: work(:)
   integer(psb_ipk_), intent(out)                 :: info
   integer(psb_ipk_), optional, intent(in)        :: data
   !Local
-  integer(psb_ipk_)  :: ictxt,np,me, err_act,isz,int_err(5), data_
-  character          :: trans_
-  character(len=20)  :: name='@X@_as_smther_prol_v', ch_err
+  type(psb_ctxt_type) :: ctxt
+  integer(psb_ipk_)   :: np, me, err_act,isz,int_err(5), data_
+  character           :: trans_
+  character(len=20)   :: name='@X@_as_smther_prol_v', ch_err
 
   call psb_erractionsave(err_act)
 
   info  = psb_success_
-  ictxt = sm%desc_data%get_context()
-  call psb_info(ictxt,me,np)
+  ctxt = sm%desc_data%get_context()
+  call psb_info(ctxt,me,np)
 
   trans_ = psb_toupper(trans)
   select case(trans_)
@@ -107,7 +108,7 @@ subroutine mld_@X@_as_smoother_prol_v(sm,x,trans,work,info,data)
 
     case default
       call psb_errpush(psb_err_internal_error_,name,&
-           & a_err='Invalid mld_sub_prol_')
+           & a_err='Invalid amg_sub_prol_')
       goto 9999
     end select
 
@@ -125,7 +126,7 @@ subroutine mld_@X@_as_smoother_prol_v(sm,x,trans,work,info,data)
       end if
     else if (sm%restr /= psb_none_) then 
       call psb_errpush(psb_err_internal_error_,name,&
-           & a_err='Invalid mld_sub_restr_')
+           & a_err='Invalid amg_sub_restr_')
       goto 9999
     end if
 
@@ -144,6 +145,6 @@ subroutine mld_@X@_as_smoother_prol_v(sm,x,trans,work,info,data)
 
   return
 
-end subroutine mld_@X@_as_smoother_prol_v
+end subroutine amg_@X@_as_smoother_prol_v
 
 

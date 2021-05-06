@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,16 +35,16 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-subroutine mld_@X@_as_smoother_clone(sm,smout,info)
+subroutine amg_@X@_as_smoother_clone(sm,smout,info)
   
   use psb_base_mod
-  use mld_@X@_as_smoother, mld_protect_name => mld_@X@_as_smoother_clone
+  use amg_@X@_as_smoother, amg_protect_name => amg_@X@_as_smoother_clone
 
   Implicit None
 
   ! Arguments
-  class(mld_@X@_as_smoother_type), intent(inout)                :: sm
-  class(mld_@X@_base_smoother_type), allocatable, intent(inout) :: smout
+  class(amg_@X@_as_smoother_type), intent(inout)                :: sm
+  class(amg_@X@_base_smoother_type), allocatable, intent(inout) :: smout
   integer(psb_ipk_), intent(out)                              :: info
   ! Local variables 
   integer(psb_ipk_) :: err_act
@@ -58,14 +58,14 @@ subroutine mld_@X@_as_smoother_clone(sm,smout,info)
     if (info == psb_success_) deallocate(smout, stat=info)
   end if
   if (info == psb_success_) &
-       & allocate(mld_@X@_as_smoother_type :: smout, stat=info)
+       & allocate(amg_@X@_as_smoother_type :: smout, stat=info)
   if (info /= 0) then 
     info = psb_err_alloc_dealloc_
     goto 9999 
   end if
 
   select type(smo => smout)
-  type is (mld_@X@_as_smoother_type)
+  type is (amg_@X@_as_smoother_type)
     smo%novr        = sm%novr
     smo%restr       = sm%restr
     smo%prol        = sm%prol
@@ -90,4 +90,4 @@ subroutine mld_@X@_as_smoother_clone(sm,smout,info)
 9999 call psb_error_handler(err_act)
 
   return
-end subroutine mld_@X@_as_smoother_clone
+end subroutine amg_@X@_as_smoother_clone

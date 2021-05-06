@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -36,30 +36,30 @@
 !   
 !  
 !
-! File: mld_@X@_slu_solver_mod.f90
+! File: amg_@X@_slu_solver_mod.f90
 !
-! Module: mld_@X@_slu_solver_mod
+! Module: amg_@X@_slu_solver_mod
 !
 !  This module defines: 
-!  - the mld_@X@_slu_solver_type data structure containing the ingredients
+!  - the amg_@X@_slu_solver_type data structure containing the ingredients
 !    to interface with the SuperLU package. 
 !    1. The factorization is restricted to the diagonal block of the
 !       current image.
 !
-module mld_@X@_slu_solver
+module amg_@X@_slu_solver
 
   use iso_c_binding
-  use mld_@X@_base_solver_mod
+  use amg_@X@_base_solver_mod
 
-#if defined(LONG_INTEGERS)
+#if defined(IPK8)
 
-  type, extends(mld_@X@_base_solver_type) :: mld_@X@_slu_solver_type
+  type, extends(amg_@X@_base_solver_type) :: amg_@X@_slu_solver_type
 
-  end type mld_@X@_slu_solver_type
+  end type amg_@X@_slu_solver_type
 
 #else  
 
-  type, extends(mld_@X@_base_solver_type) :: mld_@X@_slu_solver_type
+  type, extends(amg_@X@_base_solver_type) :: amg_@X@_slu_solver_type
     type(c_ptr)                 :: lufactors=c_null_ptr
     integer(c_long_long)        :: symbsize=0, numsize=0
   contains
@@ -67,57 +67,55 @@ module mld_@X@_slu_solver
     procedure, pass(sv) :: apply_a => @X@_slu_solver_apply
     procedure, pass(sv) :: apply_v => @X@_slu_solver_apply_vect
     procedure, pass(sv) :: free    => @X@_slu_solver_free
+    procedure, pass(sv) :: clear_data  => @X@_slu_solver_clear_data
     procedure, pass(sv) :: descr   => @X@_slu_solver_descr
     procedure, pass(sv) :: sizeof  => @X@_slu_solver_sizeof
     procedure, nopass   :: get_fmt => @X@_slu_solver_get_fmt
     procedure, nopass   :: get_id  => @X@_slu_solver_get_id
-#if defined(HAVE_FINAL) 
     final               :: @X@_slu_solver_finalize
-#endif
-  end type mld_@X@_slu_solver_type
+  end type amg_@X@_slu_solver_type
 
 
   private :: @X@_slu_solver_bld, @X@_slu_solver_apply, &
        &  @X@_slu_solver_free,   @X@_slu_solver_descr, &
        &  @X@_slu_solver_sizeof, @X@_slu_solver_apply_vect, &
-       &  @X@_slu_solver_get_fmt, @X@_slu_solver_get_id
-#if defined(HAVE_FINAL) 
+       &  @X@_slu_solver_get_fmt, @X@_slu_solver_get_id, &
+       &  @X@_slu_solver_clear_data
   private :: @X@_slu_solver_finalize
-#endif
 
 
 
   interface 
-    function mld_@X@slu_fact(n,nnz,values,rowptr,colind,&
+    function amg_@X@slu_fact(n,nnz,values,rowptr,colind,&
          & lufactors)&
-         & bind(c,name='mld_@X@slu_fact') result(info)
+         & bind(c,name='amg_@X@slu_fact') result(info)
       use iso_c_binding
       integer(c_int), value :: n,nnz
       integer(c_int)        :: info
       integer(c_int)        :: rowptr(*),colind(*)
       @TYPE@(@FCKIND@)        :: values(*)
       type(c_ptr)           :: lufactors
-    end function mld_@X@slu_fact
+    end function amg_@X@slu_fact
   end interface
 
   interface 
-    function mld_@X@slu_solve(itrans,n,nrhs,b,ldb,lufactors)&
-         & bind(c,name='mld_@X@slu_solve') result(info)
+    function amg_@X@slu_solve(itrans,n,nrhs,b,ldb,lufactors)&
+         & bind(c,name='amg_@X@slu_solve') result(info)
       use iso_c_binding
       integer(c_int)        :: info
       integer(c_int), value :: itrans,n,nrhs,ldb
       @TYPE@(@FCKIND@)        :: b(ldb,*)
       type(c_ptr), value    :: lufactors
-    end function mld_@X@slu_solve
+    end function amg_@X@slu_solve
   end interface
 
   interface 
-    function mld_@X@slu_free(lufactors)&
-         & bind(c,name='mld_@X@slu_free') result(info)
+    function amg_@X@slu_free(lufactors)&
+         & bind(c,name='amg_@X@slu_free') result(info)
       use iso_c_binding
       integer(c_int)        :: info
       type(c_ptr), value    :: lufactors
-    end function mld_@X@slu_free
+    end function amg_@X@slu_free
   end interface
 
 contains
@@ -127,7 +125,7 @@ contains
     use psb_base_mod
     implicit none 
     type(psb_desc_type), intent(in)      :: desc_data
-    class(mld_@X@_slu_solver_type), intent(inout) :: sv
+    class(amg_@X@_slu_solver_type), intent(inout) :: sv
     @TYPE@(@FKIND@),intent(inout)         :: x(:)
     @TYPE@(@FKIND@),intent(inout)         :: y(:)
     @TYPE@(@FKIND@),intent(in)            :: alpha,beta
@@ -139,7 +137,8 @@ contains
 
     integer    :: n_row,n_col
     @TYPE@(@FKIND@), pointer :: ww(:)
-    integer    :: ictxt,np,me,i, err_act
+    type(psb_ctxt_type) :: ctxt
+    integer    :: np,me,i, err_act
     character          :: trans_
     character(len=20)  :: name='@X@_slu_solver_apply'
 
@@ -177,11 +176,11 @@ contains
     ww(1:n_row) = x(1:n_row)
     select case(trans_)
     case('N')
-      info = mld_@X@slu_solve(0,n_row,1,ww,n_row,sv%lufactors)
+      info = amg_@X@slu_solve(0,n_row,1,ww,n_row,sv%lufactors)
     case('T')
-      info = mld_@X@slu_solve(1,n_row,1,ww,n_row,sv%lufactors)
+      info = amg_@X@slu_solve(1,n_row,1,ww,n_row,sv%lufactors)
     case('C')
-      info = mld_@X@slu_solve(2,n_row,1,ww,n_row,sv%lufactors)
+      info = amg_@X@slu_solve(2,n_row,1,ww,n_row,sv%lufactors)
     case default
       call psb_errpush(psb_err_internal_error_, &
            & name,a_err='Invalid TRANS in ILU subsolve')
@@ -215,7 +214,7 @@ contains
     use psb_base_mod
     implicit none 
     type(psb_desc_type), intent(in)      :: desc_data
-    class(mld_@X@_slu_solver_type), intent(inout) :: sv
+    class(amg_@X@_slu_solver_type), intent(inout) :: sv
     type(psb_@X@_vect_type),intent(inout)  :: x
     type(psb_@X@_vect_type),intent(inout)  :: y
     @TYPE@(@FKIND@),intent(in)            :: alpha,beta
@@ -258,8 +257,8 @@ contains
 
     ! Arguments
     type(psb_@X@spmat_type), intent(in), target           :: a
-    Type(psb_desc_type), Intent(in)                     :: desc_a 
-    class(mld_@X@_slu_solver_type), intent(inout)         :: sv
+    Type(psb_desc_type), Intent(inout)                  :: desc_a 
+    class(amg_@X@_slu_solver_type), intent(inout)         :: sv
     integer, intent(out)                                :: info
     type(psb_@X@spmat_type), intent(in), target, optional :: b
     class(psb_@X@_base_sparse_mat), intent(in), optional  :: amold
@@ -270,15 +269,16 @@ contains
     type(psb_@X@_csc_sparse_mat) :: acsc
     type(psb_@X@_coo_sparse_mat) :: acoo
     integer :: n_row,n_col, nrow_a, nztota
-    integer :: ictxt,np,me,i, err_act, debug_unit, debug_level
+    type(psb_ctxt_type) :: ctxt
+    integer :: np,me,i, err_act, debug_unit, debug_level
     character(len=20)  :: name='@X@_slu_solver_bld', ch_err
     
     info=psb_success_
     call psb_erractionsave(err_act)
     debug_unit  = psb_get_debug_unit()
     debug_level = psb_get_debug_level()
-    ictxt       = desc_a%get_context()
-    call psb_info(ictxt, me, np)
+    ctxt       = desc_a%get_context()
+    call psb_info(ctxt, me, np)
     if (debug_level >= psb_debug_outer_) &
          & write(debug_unit,*) me,' ',trim(name),' start'
     
@@ -297,12 +297,12 @@ contains
     ! Fix the entries to call C-base SuperLU
     acsc%ia(:)  = acsc%ia(:)  - 1
     acsc%icp(:) = acsc%icp(:) - 1
-    info = mld_@X@slu_fact(nrow_a,nztota,acsc%val,&
+    info = amg_@X@slu_fact(nrow_a,nztota,acsc%val,&
          & acsc%icp,acsc%ia,sv%lufactors)
     
     if (info /= psb_success_) then
       info=psb_err_from_subroutine_
-      ch_err='mld_@X@slu_fact'
+      ch_err='amg_@X@slu_fact'
       call psb_errpush(info,name,a_err=ch_err)
       goto 9999
     end if
@@ -325,19 +325,18 @@ contains
     Implicit None
 
     ! Arguments
-    class(mld_@X@_slu_solver_type), intent(inout) :: sv
+    class(amg_@X@_slu_solver_type), intent(inout) :: sv
     integer, intent(out)                       :: info
     Integer :: err_act
     character(len=20)  :: name='@X@_slu_solver_free'
 
     call psb_erractionsave(err_act)
 
-    
-    info = mld_@X@slu_free(sv%lufactors)
-    
-    if (info /= psb_success_) goto 9999
-    sv%lufactors = c_null_ptr
+    info = psb_success_ 
 
+    call sv%clear_data(info)
+
+    if (info /= psb_success_) goto 9999
 
     call psb_erractionrestore(err_act)
     return
@@ -346,13 +345,36 @@ contains
   return
   end subroutine @X@_slu_solver_free
 
-#if defined(HAVE_FINAL)
+  subroutine @X@_slu_solver_clear_data(sv,info)
+
+    Implicit None
+
+    ! Arguments
+    class(amg_@X@_slu_solver_type), intent(inout) :: sv
+    integer, intent(out)                       :: info
+    Integer :: err_act
+    character(len=20)  :: name='@X@_slu_solver_clear_data'
+
+    call psb_erractionsave(err_act)
+
+    info = psb_success_ 
+    if (c_associated(sv%lufactors)) info = amg_@X@slu_free(sv%lufactors)
+    sv%lufactors = c_null_ptr
+    if (info /= psb_success_) goto 9999
+
+    call psb_erractionrestore(err_act)
+    return
+
+9999 call psb_error_handler(err_act)
+    return
+  end subroutine @X@_slu_solver_clear_data
+
   subroutine @X@_slu_solver_finalize(sv)
 
     Implicit None
 
     ! Arguments
-    type(mld_@X@_slu_solver_type), intent(inout) :: sv
+    type(amg_@X@_slu_solver_type), intent(inout) :: sv
     integer :: info
     Integer :: err_act
     character(len=20)  :: name='@X@_slu_solver_finalize'
@@ -362,22 +384,20 @@ contains
     return
   
   end subroutine @X@_slu_solver_finalize
-#endif
 
   subroutine @X@_slu_solver_descr(sv,info,iout,coarse)
 
     Implicit None
 
     ! Arguments
-    class(mld_@X@_slu_solver_type), intent(in) :: sv
+    class(amg_@X@_slu_solver_type), intent(in) :: sv
     integer, intent(out)                     :: info
     integer, intent(in), optional            :: iout
     logical, intent(in), optional       :: coarse
 
     ! Local variables
     integer      :: err_act
-    integer      :: ictxt, me, np
-    character(len=20), parameter :: name='mld_@X@_slu_solver_descr'
+    character(len=20), parameter :: name='amg_@X@_slu_solver_descr'
     integer :: iout_
 
     call psb_erractionsave(err_act)
@@ -401,11 +421,11 @@ contains
 
     implicit none 
     ! Arguments
-    class(mld_@X@_slu_solver_type), intent(in) :: sv
-    integer(psb_long_int_k_) :: val
+    class(amg_@X@_slu_solver_type), intent(in) :: sv
+    integer(psb_epk_) :: val
     integer             :: i
 
-    val = 2*psb_sizeof_int + psb_sizeof_dp
+    val = 2*psb_sizeof_ip + psb_sizeof_dp
     val = val + sv%symbsize
     val = val + sv%numsize
     return
@@ -422,7 +442,7 @@ contains
     implicit none 
     integer(psb_ipk_)  :: val
 
-    val = mld_slu_
+    val = amg_slu_
   end function @X@_slu_solver_get_id
 #endif
-end module mld_@X@_slu_solver
+end module amg_@X@_slu_solver

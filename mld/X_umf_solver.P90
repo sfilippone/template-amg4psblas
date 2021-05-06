@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -36,29 +36,29 @@
 !   
 !  
 !
-! File: mld_@X@_umf_solver_mod.f90
+! File: amg_@X@_umf_solver_mod.f90
 !
-! Module: mld_@X@_umf_solver_mod
+! Module: amg_@X@_umf_solver_mod
 !
 !  This module defines: 
-!  - the mld_@X@_umf_solver_type data structure containing the ingredients
+!  - the amg_@X@_umf_solver_type data structure containing the ingredients
 !    to interface with the UMFPACK package. 
 !    1. The factorization is restricted to the diagonal block of the
 !       current image.
 !
-module mld_@X@_umf_solver
+module amg_@X@_umf_solver
 
   use iso_c_binding
-  use mld_@X@_base_solver_mod
+  use amg_@X@_base_solver_mod
 
-#if defined(LONG_INTEGERS)
-  type, extends(mld_@X@_base_solver_type) :: mld_@X@_umf_solver_type
+#if defined(IPK8)
+  type, extends(amg_@X@_base_solver_type) :: amg_@X@_umf_solver_type
 
-  end type mld_@X@_umf_solver_type
+  end type amg_@X@_umf_solver_type
 
 #else
   
-  type, extends(mld_@X@_base_solver_type) :: mld_@X@_umf_solver_type
+  type, extends(amg_@X@_base_solver_type) :: amg_@X@_umf_solver_type
     type(c_ptr)                 :: symbolic=c_null_ptr, numeric=c_null_ptr
     integer(c_long_long)        :: symbsize=0, numsize=0
   contains
@@ -66,30 +66,28 @@ module mld_@X@_umf_solver
     procedure, pass(sv) :: apply_a => @X@_umf_solver_apply
     procedure, pass(sv) :: apply_v => @X@_umf_solver_apply_vect
     procedure, pass(sv) :: free    => @X@_umf_solver_free
+    procedure, pass(sv) :: clear_data  => @X@_umf_solver_clear_data
     procedure, pass(sv) :: descr   => @X@_umf_solver_descr
     procedure, pass(sv) :: sizeof  => @X@_umf_solver_sizeof
     procedure, nopass   :: get_fmt => @X@_umf_solver_get_fmt
     procedure, nopass   :: get_id  => @X@_umf_solver_get_id
-#if defined(HAVE_FINAL) 
     final               :: @X@_umf_solver_finalize
-#endif
-  end type mld_@X@_umf_solver_type
+  end type amg_@X@_umf_solver_type
 
 
   private :: @X@_umf_solver_bld, @X@_umf_solver_apply, &
        &  @X@_umf_solver_free,   @X@_umf_solver_descr, &
        &  @X@_umf_solver_sizeof, @X@_umf_solver_apply_vect, &
-       &  @X@_umf_solver_get_fmt, @X@_umf_solver_get_id
-#if defined(HAVE_FINAL) 
+       &  @X@_umf_solver_get_fmt, @X@_umf_solver_get_id, &
+       &  @X@_umf_solver_clear_data
   private :: @X@_umf_solver_finalize
-#endif
 
 
 
   interface 
-    function mld_@X@umf_fact(n,nnz,values,rowind,colptr,&
+    function amg_@X@umf_fact(n,nnz,values,rowind,colptr,&
          & symptr,numptr,ssize,nsize)&
-         & bind(c,name='mld_@X@umf_fact') result(info)
+         & bind(c,name='amg_@X@umf_fact') result(info)
       use iso_c_binding
       integer(c_int), value :: n,nnz
       integer(c_int)        :: info
@@ -97,27 +95,27 @@ module mld_@X@_umf_solver
       integer(c_int)        :: rowind(*),colptr(*)
       @TYPE@(@FCKIND@)  :: values(*)
       type(c_ptr)           :: symptr, numptr
-    end function mld_@X@umf_fact
+    end function amg_@X@umf_fact
   end interface
 
   interface 
-    function mld_@X@umf_solve(itrans,n,x, b, ldb, numptr)&
-         & bind(c,name='mld_@X@umf_solve') result(info)
+    function amg_@X@umf_solve(itrans,n,x, b, ldb, numptr)&
+         & bind(c,name='amg_@X@umf_solve') result(info)
       use iso_c_binding
       integer(c_int)        :: info
       integer(c_int), value :: itrans,n,ldb
       @TYPE@(@FCKIND@) :: x(*), b(ldb,*)
       type(c_ptr), value    :: numptr
-    end function mld_@X@umf_solve
+    end function amg_@X@umf_solve
   end interface
 
   interface 
-    function mld_@X@umf_free(symptr, numptr)&
-         & bind(c,name='mld_@X@umf_free') result(info)
+    function amg_@X@umf_free(symptr, numptr)&
+         & bind(c,name='amg_@X@umf_free') result(info)
       use iso_c_binding
       integer(c_int)        :: info
       type(c_ptr), value    :: symptr, numptr
-    end function mld_@X@umf_free
+    end function amg_@X@umf_free
   end interface
 
 contains
@@ -127,7 +125,7 @@ contains
     use psb_base_mod
     implicit none 
     type(psb_desc_type), intent(in)      :: desc_data
-    class(mld_@X@_umf_solver_type), intent(inout) :: sv
+    class(amg_@X@_umf_solver_type), intent(inout) :: sv
     @TYPE@(@FKIND@),intent(inout)         :: x(:)
     @TYPE@(@FKIND@),intent(inout)         :: y(:)
     @TYPE@(@FKIND@),intent(in)            :: alpha,beta
@@ -139,7 +137,7 @@ contains
 
     integer    :: n_row,n_col
     @TYPE@(@FKIND@), pointer :: ww(:)
-    integer    :: ictxt,np,me,i, err_act
+    integer(psb_ipk_)  :: i, err_act
     character          :: trans_
     character(len=20)  :: name='@X@_umf_solver_apply'
 
@@ -176,19 +174,19 @@ contains
 
     select case(trans_)
     case('N')
-      info = mld_@X@umf_solve(0,n_row,ww,x,n_row,sv%numeric)
+      info = amg_@X@umf_solve(0,n_row,ww,x,n_row,sv%numeric)
     case('T')
       ! 
       ! Note: with UMF, 1 meand Ctranspose, 2 means transpose
       ! even for complex data. 
       !
       if (psb_@X@_is_complex_) then 
-        info = mld_@X@umf_solve(2,n_row,ww,x,n_row,sv%numeric)
+        info = amg_@X@umf_solve(2,n_row,ww,x,n_row,sv%numeric)
       else
-        info = mld_@X@umf_solve(1,n_row,ww,x,n_row,sv%numeric)
+        info = amg_@X@umf_solve(1,n_row,ww,x,n_row,sv%numeric)
       end if
     case('C')
-      info = mld_@X@umf_solve(1,n_row,ww,x,n_row,sv%numeric)
+      info = amg_@X@umf_solve(1,n_row,ww,x,n_row,sv%numeric)
     case default
       call psb_errpush(psb_err_internal_error_,name,a_err='Invalid TRANS in ILU subsolve')
       goto 9999
@@ -219,7 +217,7 @@ contains
     use psb_base_mod
     implicit none 
     type(psb_desc_type), intent(in)      :: desc_data
-    class(mld_@X@_umf_solver_type), intent(inout) :: sv
+    class(amg_@X@_umf_solver_type), intent(inout) :: sv
     type(psb_@X@_vect_type),intent(inout)  :: x
     type(psb_@X@_vect_type),intent(inout)  :: y
     @TYPE@(@FKIND@),intent(in)            :: alpha,beta
@@ -262,8 +260,8 @@ contains
 
     ! Arguments
     type(psb_@X@spmat_type), intent(in), target           :: a
-    Type(psb_desc_type), Intent(in)                     :: desc_a 
-    class(mld_@X@_umf_solver_type), intent(inout)         :: sv
+    Type(psb_desc_type), Intent(inout)                  :: desc_a 
+    class(amg_@X@_umf_solver_type), intent(inout)         :: sv
     integer, intent(out)                                :: info
     type(psb_@X@spmat_type), intent(in), target, optional :: b
     class(psb_@X@_base_sparse_mat), intent(in), optional  :: amold
@@ -273,15 +271,16 @@ contains
     type(psb_@X@spmat_type) :: atmp
     type(psb_@X@_csc_sparse_mat) :: acsc
     integer :: n_row,n_col, nrow_a, nztota
-    integer :: ictxt,np,me,i, err_act, debug_unit, debug_level
+    type(psb_ctxt_type) :: ctxt
+    integer :: np,me,i, err_act, debug_unit, debug_level
     character(len=20)  :: name='@X@_umf_solver_bld', ch_err
     
     info=psb_success_
     call psb_erractionsave(err_act)
     debug_unit  = psb_get_debug_unit()
     debug_level = psb_get_debug_level()
-    ictxt       = desc_a%get_context()
-    call psb_info(ictxt, me, np)
+    ctxt       = desc_a%get_context()
+    call psb_info(ctxt, me, np)
     if (debug_level >= psb_debug_outer_) &
          & write(debug_unit,*) me,' ',trim(name),' start'
 
@@ -298,13 +297,13 @@ contains
     ! Fix the entres to call C-base UMFPACK. 
     acsc%ia(:)  = acsc%ia(:) - 1
     acsc%icp(:) = acsc%icp(:) - 1
-    info = mld_@X@umf_fact(nrow_a,nztota,acsc%val,&
+    info = amg_@X@umf_fact(nrow_a,nztota,acsc%val,&
          & acsc%ia,acsc%icp,sv%symbolic,sv%numeric,&
          & sv%symbsize,sv%numsize)
     
     if (info /= psb_success_) then
       info=psb_err_from_subroutine_
-      ch_err='mld_@X@umf_fact'
+      ch_err='amg_@X@umf_fact'
       call psb_errpush(info,name,a_err=ch_err)
       goto 9999
     end if
@@ -327,21 +326,16 @@ contains
     Implicit None
 
     ! Arguments
-    class(mld_@X@_umf_solver_type), intent(inout) :: sv
+    class(amg_@X@_umf_solver_type), intent(inout) :: sv
     integer, intent(out)                       :: info
     Integer :: err_act
     character(len=20)  :: name='@X@_umf_solver_free'
 
     call psb_erractionsave(err_act)
 
-    
-    info = mld_@X@umf_free(sv%symbolic,sv%numeric)
+    call sv%clear_data(info) 
     
     if (info /= psb_success_) goto 9999
-    sv%symbolic = c_null_ptr
-    sv%numeric  = c_null_ptr
-    sv%symbsize = 0
-    sv%numsize  = 0
 
     call psb_erractionrestore(err_act)
     return
@@ -350,13 +344,42 @@ contains
     return
   end subroutine @X@_umf_solver_free
 
-#if defined(HAVE_FINAL)
+
+  subroutine @X@_umf_solver_clear_data(sv,info)
+
+    Implicit None
+
+    ! Arguments
+    class(amg_@X@_umf_solver_type), intent(inout) :: sv
+    integer, intent(out)                       :: info
+    Integer :: err_act
+    character(len=20)  :: name='@X@_umf_solver_clear_data'
+
+    call psb_erractionsave(err_act)
+    info = 0 
+    if (c_associated(sv%symbolic).and.c_associated(sv%numeric)) then 
+      info = amg_@X@umf_free(sv%symbolic,sv%numeric)
+      
+      if (info /= psb_success_) goto 9999
+      sv%symbolic = c_null_ptr
+      sv%numeric  = c_null_ptr
+      sv%symbsize = 0
+      sv%numsize  = 0
+    end if
+
+    call psb_erractionrestore(err_act)
+    return
+
+9999 call psb_error_handler(err_act)
+    return
+  end subroutine @X@_umf_solver_clear_data
+
   subroutine @X@_umf_solver_finalize(sv)
 
     Implicit None
 
     ! Arguments
-    type(mld_@X@_umf_solver_type), intent(inout) :: sv
+    type(amg_@X@_umf_solver_type), intent(inout) :: sv
     integer :: info
     Integer :: err_act
     character(len=20)  :: name='@X@_umf_solver_finalize'
@@ -366,22 +389,20 @@ contains
     return
   
   end subroutine @X@_umf_solver_finalize
-#endif
 
   subroutine @X@_umf_solver_descr(sv,info,iout,coarse)
 
     Implicit None
 
     ! Arguments
-    class(mld_@X@_umf_solver_type), intent(in) :: sv
+    class(amg_@X@_umf_solver_type), intent(in) :: sv
     integer, intent(out)                     :: info
     integer, intent(in), optional            :: iout
     logical, intent(in), optional       :: coarse
 
     ! Local variables
     integer      :: err_act
-    integer      :: ictxt, me, np
-    character(len=20), parameter :: name='mld_@X@_umf_solver_descr'
+    character(len=20), parameter :: name='amg_@X@_umf_solver_descr'
     integer :: iout_
 
     call psb_erractionsave(err_act)
@@ -405,11 +426,11 @@ contains
 
     implicit none 
     ! Arguments
-    class(mld_@X@_umf_solver_type), intent(in) :: sv
-    integer(psb_long_int_k_) :: val
+    class(amg_@X@_umf_solver_type), intent(in) :: sv
+    integer(psb_epk_) :: val
     integer             :: i
 
-    val = 2*psb_sizeof_long_int 
+    val = 2*psb_sizeof_lp 
     val = val + sv%symbsize
     val = val + sv%numsize
     return
@@ -426,7 +447,7 @@ contains
     implicit none 
     integer(psb_ipk_)  :: val
 
-    val = mld_umf_
+    val = amg_umf_
   end function @X@_umf_solver_get_id
 #endif
-end module mld_@X@_umf_solver
+end module amg_@X@_umf_solver

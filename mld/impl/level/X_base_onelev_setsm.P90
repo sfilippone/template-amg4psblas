@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,39 +35,39 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-subroutine mld_@X@_base_onelev_setsm(lev,val,info,pos)
+subroutine amg_@X@_base_onelev_setsm(lev,val,info,pos)
 
   use psb_base_mod
-  use mld_@X@_prec_mod, mld_protect_name => mld_@X@_base_onelev_setsm
+  use amg_@X@_prec_mod, amg_protect_name => amg_@X@_base_onelev_setsm
 
   implicit none
 
   ! Arguments
-  class(mld_@X@_onelev_type), target, intent(inout) :: lev
-  class(mld_@X@_base_smoother_type), intent(in)  :: val
+  class(amg_@X@_onelev_type), target, intent(inout) :: lev
+  class(amg_@X@_base_smoother_type), intent(in)  :: val
   integer(psb_ipk_), intent(out)               :: info
   character(len=*), optional, intent(in)       :: pos
   
   ! Local variables
   integer(psb_ipk_)                      :: ipos_
-  character(len=*), parameter            :: name='mld_base_onelev_setsm'
+  character(len=*), parameter            :: name='amg_base_onelev_setsm'
   
   info = psb_success_
 
   if (present(pos)) then
     select case(psb_toupper(trim(pos)))
     case('PRE')
-      ipos_ = mld_smooth_pre_
+      ipos_ = amg_smooth_pre_
     case('POST')
-      ipos_ = mld_smooth_post_
+      ipos_ = amg_smooth_post_
     case default
-      ipos_ = mld_smooth_both_
+      ipos_ = amg_smooth_both_
     end select
   else
-    ipos_ = mld_smooth_both_
+    ipos_ = amg_smooth_both_
   end if
 
-  if (ipos_ == mld_smooth_both_) then
+  if (ipos_ == amg_smooth_both_) then
     if (allocated(lev%sm2a)) then
       call lev%sm2a%free(info)
       deallocate(lev%sm2a, stat=info)
@@ -76,7 +76,7 @@ subroutine mld_@X@_base_onelev_setsm(lev,val,info,pos)
   end if
      
   select case(ipos_)
-  case(mld_smooth_pre_, mld_smooth_both_) 
+  case(amg_smooth_pre_, amg_smooth_both_) 
     if (allocated(lev%sm)) then
       if (.not.same_type_as(lev%sm,val)) then
         call lev%sm%free(info)
@@ -91,8 +91,8 @@ subroutine mld_@X@_base_onelev_setsm(lev,val,info,pos)
 #endif
     end if
     call lev%sm%default()        
-    if (ipos_ ==  mld_smooth_both_) lev%sm2 => lev%sm
-  case(mld_smooth_post_) 
+    if (ipos_ ==  amg_smooth_both_) lev%sm2 => lev%sm
+  case(amg_smooth_post_) 
     if (allocated(lev%sm2a)) then
       if (.not.same_type_as(lev%sm2a,val)) then
         call lev%sm2a%free(info)
@@ -110,5 +110,5 @@ subroutine mld_@X@_base_onelev_setsm(lev,val,info,pos)
     lev%sm2 => lev%sm2a
   end select
     
-end subroutine mld_@X@_base_onelev_setsm
+end subroutine amg_@X@_base_onelev_setsm
 

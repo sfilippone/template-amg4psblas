@@ -1,14 +1,14 @@
 !   
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -34,32 +34,32 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
-module mld_@X@_pde_mod
+module amg_@X@_pde_mod
   use psb_base_mod, only : @FKIND@, psb_ipk_, psb_desc_type,&
-       &  psb_@X@spmat_type, psb_@X@_vect_type, @XZERO@,&
+       &  psb_@X@spmat_type, psb_@X@_vect_type, @RZERO@, @RONE@,&
        &  psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, psb_i_base_vect_type
 
   interface 
     function @X@_func_3d(x,y,z) result(val)
       import :: @FKIND@
-      real(@FKIND@), intent(in) :: x,y,z
-      real(@FKIND@) :: val
+      @RTYPE@(@FKIND@), intent(in) :: x,y,z
+      @RTYPE@(@FKIND@) :: val
     end function @X@_func_3d
   end interface 
 
-  interface mld_gen_pde3d
-    module procedure  mld_@X@_gen_pde3d
-  end interface mld_gen_pde3d
+  interface amg_gen_pde3d
+    module procedure  amg_@X@_gen_pde3d
+  end interface amg_gen_pde3d
 
   
 contains
 
   function @X@_null_func_3d(x,y,z) result(val)
 
-    real(@FKIND@), intent(in) :: x,y,z
-    real(@FKIND@) :: val
-    
-    val = @XZERO@
+    @RTYPE@(@FKIND@), intent(in) :: x,y,z
+    @RTYPE@(@FKIND@) :: val
+
+    val = @RZERO@
 
   end function @X@_null_func_3d
 
@@ -67,7 +67,7 @@ contains
   !  subroutine to allocate and fill in the coefficient matrix and
   !  the rhs. 
   !
-  subroutine mld_@X@_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,afmt,&
+  subroutine amg_@X@_gen_pde3d(ctxt,idim,a,bv,xv,desc_a,afmt,&
        & a1,a2,a3,b1,b2,b3,c,g,info,f,amold,vmold,imold,partition,nrl,iv)
     use psb_base_mod
     use psb_util_mod
@@ -92,8 +92,9 @@ contains
     type(psb_@X@spmat_type) :: a
     type(psb_@X@_vect_type) :: xv,bv
     type(psb_desc_type)   :: desc_a
-    integer(psb_ipk_)     :: ictxt, info
-    character(len=*)      :: afmt
+    integer(psb_ipk_)     :: info
+    type(psb_ctxt_type)   :: ctxt
+    character             :: afmt*5
     procedure(@X@_func_3d), optional :: f
     class(psb_@X@_base_sparse_mat), optional :: amold
     class(psb_@X@_base_vect_type), optional :: vmold 
@@ -106,21 +107,25 @@ contains
     type(psb_@X@_csc_sparse_mat)  :: acsc
     type(psb_@X@_coo_sparse_mat)  :: acoo
     type(psb_@X@_csr_sparse_mat)  :: acsr
-    real(@FKIND@)           :: zt(nb),x,y,z
-    integer(psb_ipk_) :: m,n,nnz,nr,nt,glob_row,nlr,i,j,ii,ib,k, partition_
+    @RTYPE@(@FKIND@)           :: zt(nb),x,y,z,xph,xmh,yph,ymh,zph,zmh
+    integer(psb_ipk_) :: nnz,nr,nlr,i,j,ii,ib,k, partition_
+    integer(psb_lpk_) :: m,n,glob_row,nt
     integer(psb_ipk_) :: ix,iy,iz,ia,indx_owner
     ! For 3D partition
-    integer(psb_ipk_) :: npx,npy,npz, npdims(3),iamx,iamy,iamz,mynx,myny,mynz
+    ! Note: integer control variables going directly into an MPI call
+    ! must be 4 bytes, i.e. psb_mpk_
+    integer(psb_mpk_) :: npdims(3), npp, minfo
+    integer(psb_ipk_) :: npx,npy,npz, iamx,iamy,iamz,mynx,myny,mynz
     integer(psb_ipk_), allocatable :: bndx(:),bndy(:),bndz(:)
     ! Process grid
     integer(psb_ipk_) :: np, iam
     integer(psb_ipk_) :: icoeff
-    integer(psb_ipk_), allocatable     :: irow(:),icol(:),myidx(:)
-    real(@FKIND@), allocatable :: val(:)
+    integer(psb_lpk_), allocatable     :: irow(:),icol(:),myidx(:)
+    @RTYPE@(@FKIND@), allocatable :: val(:)
     ! deltah dimension of each grid cell
     ! deltat discretization time
-    real(@FKIND@)            :: deltah, sqdeltah, deltah2
-    real(@FKIND@), parameter :: rhs=@XZERO@,one=@XONE@,zero=@XZERO@
+    @RTYPE@(@FKIND@)            :: deltah, sqdeltah, deltah2
+    @RTYPE@(@FKIND@), parameter :: rhs=@RZERO@,one=@RONE@,zero=@RZERO@
     real(psb_dpk_)    :: t0, t1, t2, t3, tasb, talc, ttot, tgen, tcdasb
     integer(psb_ipk_) :: err_act
     procedure(@X@_func_3d), pointer :: f_
@@ -130,7 +135,7 @@ contains
     name = 'create_matrix'
     call psb_erractionsave(err_act)
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
 
     if (present(f)) then 
@@ -139,9 +144,9 @@ contains
       f_ => @X@_null_func_3d
     end if
 
-    deltah   = 1.d0/(idim+2)
+    deltah   = 1.d0/(idim+1)
     sqdeltah = deltah*deltah
-    deltah2  = 2.d0* deltah
+    deltah2  = 2.0_@FKIND@* deltah
 
     if (present(partition)) then
       if ((1<= partition).and.(partition <= 3)) then
@@ -155,11 +160,11 @@ contains
     end if
     
     ! initialize array descriptor and sparse matrix storage. provide an
-    ! estimate of the number of non zeroes 
-    
-    m   = idim*idim*idim
+    ! estimate of the number of non zeroes
+
+    m   = (1_psb_lpk_*idim)*idim*idim
     n   = m
-    nnz = ((n*9)/(np))
+    nnz = 7*((n+np-1)/np)
     if(iam == psb_root_) write(psb_out_unit,'("Generating Matrix (size=",i0,")...")')n
 
     select case(partition_)
@@ -176,12 +181,12 @@ contains
       end if
 
       nt = nr
-      call psb_sum(ictxt,nt) 
+      call psb_sum(ctxt,nt) 
       if (nt /= m) then 
         write(psb_err_unit,*) iam, 'Initialization error ',nr,nt,m
         info = -1
-        call psb_barrier(ictxt)
-        call psb_abort(ictxt)
+        call psb_barrier(ctxt)
+        call psb_abort(ctxt)
         return    
       end if
 
@@ -189,7 +194,7 @@ contains
       ! First example  of use of CDALL: specify for each process a number of
       ! contiguous rows
       ! 
-      call psb_cdall(ictxt,desc_a,info,nl=nr)
+      call psb_cdall(ctxt,desc_a,info,nl=nr)
       myidx = desc_a%get_global_indices()
       nlr = size(myidx)
 
@@ -200,15 +205,15 @@ contains
         if (size(iv) /= m) then
           write(psb_err_unit,*) iam, 'Initialization error: wrong IV size',size(iv),m
           info = -1
-          call psb_barrier(ictxt)
-          call psb_abort(ictxt)
+          call psb_barrier(ctxt)
+          call psb_abort(ctxt)
           return    
         end if
       else
         write(psb_err_unit,*) iam, 'Initialization error: IV not present'
         info = -1
-        call psb_barrier(ictxt)
-        call psb_abort(ictxt)
+        call psb_barrier(ctxt)
+        call psb_abort(ctxt)
         return    
       end if
 
@@ -216,7 +221,7 @@ contains
       ! Second example  of use of CDALL: specify for each row the
       ! process that owns it 
       ! 
-      call psb_cdall(ictxt,desc_a,info,vg=iv)
+      call psb_cdall(ctxt,desc_a,info,vg=iv)
       myidx = desc_a%get_global_indices()
       nlr = size(myidx)
 
@@ -247,7 +252,7 @@ contains
       ! Now, let's generate the list of indices I own
       nr = 0
       do i=bndx(iamx),bndx(iamx+1)-1
-        do j=bndy(iamy),bndx(iamy+1)-1
+        do j=bndy(iamy),bndy(iamy+1)-1
           do k=bndz(iamz),bndz(iamz+1)-1
             nr = nr + 1
             call ijk2idx(myidx(nr),i,j,k,idim,idim,idim)
@@ -258,21 +263,64 @@ contains
         write(psb_err_unit,*) iam,iamx,iamy,iamz, 'Initialization error: NR vs NLR ',&
              & nr,nlr,mynx,myny,mynz
         info = -1
-        call psb_barrier(ictxt)
-        call psb_abort(ictxt)
+        call psb_barrier(ctxt)
+        call psb_abort(ctxt)
       end if
 
       !
       ! Third example  of use of CDALL: specify for each process
       ! the set of global indices it owns.
       ! 
-      call psb_cdall(ictxt,desc_a,info,vl=myidx)
+      call psb_cdall(ctxt,desc_a,info,vl=myidx)
+
+      !
+      ! Specify process topology
+      !
+      block
+        !
+        ! Use adjcncy methods 
+        ! 
+        integer(psb_mpk_), allocatable :: neighbours(:)
+        integer(psb_mpk_) :: cnt
+        logical, parameter :: debug_adj=.true.
+        if (debug_adj.and.(np > 1)) then 
+          cnt = 0
+          allocate(neighbours(np))
+          if (iamx < npx-1) then
+            cnt = cnt + 1 
+            call ijk2idx(neighbours(cnt),iamx+1,iamy,iamz,npx,npy,npz,base=0)
+          end if
+          if (iamy < npy-1) then
+            cnt = cnt + 1 
+            call ijk2idx(neighbours(cnt),iamx,iamy+1,iamz,npx,npy,npz,base=0)
+          end if
+          if (iamz < npz-1) then
+            cnt = cnt + 1 
+            call ijk2idx(neighbours(cnt),iamx,iamy,iamz+1,npx,npy,npz,base=0)
+          end if
+          if (iamx >0) then
+            cnt = cnt + 1 
+            call ijk2idx(neighbours(cnt),iamx-1,iamy,iamz,npx,npy,npz,base=0)
+          end if
+          if (iamy >0) then
+            cnt = cnt + 1 
+            call ijk2idx(neighbours(cnt),iamx,iamy-1,iamz,npx,npy,npz,base=0)
+          end if
+          if (iamz >0) then
+            cnt = cnt + 1 
+            call ijk2idx(neighbours(cnt),iamx,iamy,iamz-1,npx,npy,npz,base=0)
+          end if
+          call psb_realloc(cnt, neighbours,info)
+          call desc_a%set_p_adjcncy(neighbours)
+          !write(0,*) iam,' Check on neighbours: ',desc_a%get_p_adjcncy()
+        end if
+      end block
       
     case default
       write(psb_err_unit,*) iam, 'Initialization error: should not get here'
       info = -1
-      call psb_barrier(ictxt)
-      call psb_abort(ictxt)
+      call psb_barrier(ctxt)
+      call psb_abort(ctxt)
       return
     end select
 
@@ -282,7 +330,7 @@ contains
     if (info == psb_success_) call psb_geall(xv,desc_a,info)
     if (info == psb_success_) call psb_geall(bv,desc_a,info)
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     talc = psb_wtime()-t0
 
     if (info /= psb_success_) then
@@ -308,7 +356,7 @@ contains
     ! loop over rows belonging to current process in a block
     ! distribution.
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     do ii=1, nlr,nb
       ib = min(nb,nlr-ii+1) 
@@ -329,62 +377,62 @@ contains
         !  term depending on   (x-1,y,z)
         !
         val(icoeff) = -a1(x,y,z)/sqdeltah-b1(x,y,z)/deltah2
-        if (ix == 1) then 
-          zt(k) = g(@XZERO@,y,z)*(-val(icoeff)) + zt(k)
+        if (ix == 1) then
+          zt(k) = g(@RZERO@,y,z)*(-val(icoeff)) + zt(k)
         else
-          icol(icoeff) = (ix-2)*idim*idim+(iy-1)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix-1,iy,iz,idim,idim,idim)
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
         !  term depending on     (x,y-1,z)
         val(icoeff)  = -a2(x,y,z)/sqdeltah-b2(x,y,z)/deltah2
-        if (iy == 1) then 
-          zt(k) = g(x,@XZERO@,z)*(-val(icoeff))   + zt(k)
+        if (iy == 1) then
+          zt(k) = g(x,@RZERO@,z)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy-2)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix,iy-1,iz,idim,idim,idim)
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
         !  term depending on     (x,y,z-1)
         val(icoeff)=-a3(x,y,z)/sqdeltah-b3(x,y,z)/deltah2
-        if (iz == 1) then 
-          zt(k) = g(x,y,@XZERO@)*(-val(icoeff))   + zt(k)
+        if (iz == 1) then
+          zt(k) = g(x,y,@RZERO@)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy-1)*idim+(iz-1)
+          call ijk2idx(icol(icoeff),ix,iy,iz-1,idim,idim,idim)
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
 
         !  term depending on     (x,y,z)
-        val(icoeff)=2.d0*(a1(x,y,z)+a2(x,y,z)+a3(x,y,z))/sqdeltah &
+        val(icoeff)=(2*@RONE@)*(a1(x,y,z)+a2(x,y,z)+a3(x,y,z))/sqdeltah &
              & + c(x,y,z)
-        icol(icoeff) = (ix-1)*idim*idim+(iy-1)*idim+(iz)
+        call ijk2idx(icol(icoeff),ix,iy,iz,idim,idim,idim)
         irow(icoeff) = glob_row
         icoeff       = icoeff+1                  
         !  term depending on     (x,y,z+1)
         val(icoeff)=-a3(x,y,z)/sqdeltah+b3(x,y,z)/deltah2
-        if (iz == idim) then 
-          zt(k) = g(x,y,@XONE@)*(-val(icoeff))   + zt(k)
+        if (iz == idim) then
+          zt(k) = g(x,y,@RONE@)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy-1)*idim+(iz+1)
+          call ijk2idx(icol(icoeff),ix,iy,iz+1,idim,idim,idim)
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
         !  term depending on     (x,y+1,z)
         val(icoeff)=-a2(x,y,z)/sqdeltah+b2(x,y,z)/deltah2
-        if (iy == idim) then 
-          zt(k) = g(x,@XONE@,z)*(-val(icoeff))   + zt(k)
+        if (iy == idim) then
+          zt(k) = g(x,@RONE@,z)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix,iy+1,iz,idim,idim,idim)
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
         !  term depending on     (x+1,y,z)
         val(icoeff)=-a1(x,y,z)/sqdeltah+b1(x,y,z)/deltah2
-        if (ix==idim) then 
-          zt(k) = g(@XONE@,y,z)*(-val(icoeff))   + zt(k)
+        if (ix==idim) then
+          zt(k) = g(@RONE@,y,z)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix)*idim*idim+(iy-1)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix+1,iy,iz,idim,idim,idim)
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
@@ -394,7 +442,7 @@ contains
       if(info /= psb_success_) exit
       call psb_geins(ib,myidx(ii:ii+ib-1),zt(1:ib),bv,desc_a,info)
       if(info /= psb_success_) exit
-      zt(:)=0.d0
+      zt(:)=@RZERO@
       call psb_geins(ib,myidx(ii:ii+ib-1),zt(1:ib),xv,desc_a,info)
       if(info /= psb_success_) exit
     end do
@@ -409,11 +457,11 @@ contains
 
     deallocate(val,irow,icol)
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     call psb_cdasb(desc_a,info,mold=imold)
     tcdasb = psb_wtime()-t1
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     if (info == psb_success_) then 
       if (present(amold)) then 
@@ -422,7 +470,7 @@ contains
         call psb_spasb(a,desc_a,info,dupl=psb_dupl_err_,afmt=afmt)
       end if
     end if
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     if(info /= psb_success_) then
       info=psb_err_from_subroutine_
       ch_err='asb rout.'
@@ -438,13 +486,13 @@ contains
       goto 9999
     end if
     tasb = psb_wtime()-t1
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     ttot = psb_wtime() - t0 
 
-    call psb_amx(ictxt,talc)
-    call psb_amx(ictxt,tgen)
-    call psb_amx(ictxt,tasb)
-    call psb_amx(ictxt,ttot)
+    call psb_amx(ctxt,talc)
+    call psb_amx(ctxt,tgen)
+    call psb_amx(ctxt,tasb)
+    call psb_amx(ctxt,ttot)
     if(iam == psb_root_) then
       tmpfmt = a%get_fmt()
       write(psb_out_unit,'("The matrix has been generated and assembled in ",a3," format.")')&
@@ -459,10 +507,10 @@ contains
     call psb_erractionrestore(err_act)
     return
 
-9999 call psb_error_handler(ictxt,err_act)
+9999 call psb_error_handler(ctxt,err_act)
 
     return
-  end subroutine mld_@X@_gen_pde3d
+  end subroutine amg_@X@_gen_pde3d
 
   !
   ! functions parametrizing the differential equation 
@@ -520,5 +568,5 @@ contains
       g = exp(y**2-z**2)
     end if
   end function g
-end module mld_@X@_pde_mod
+end module amg_@X@_pde_mod
 

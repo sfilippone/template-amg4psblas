@@ -1,4 +1,5 @@
-#include ../../Make.inc
+TOP=../../..
+include $(TOP)/Make.inc
 
 BASIC_MODS=
 UTIL_MODS =
@@ -8,25 +9,35 @@ MODULES=$(BASIC_MODS) $(UTIL_MODS)
 SRC=X_base_solver_apply.p90 X_base_solver_apply_vect.p90 \
     X_base_solver_bld.p90 X_base_solver_check.p90 X_base_solver_cnv.p90 \
     X_base_solver_descr.p90 X_base_solver_dmp.p90 X_base_solver_clone.p90 \
-    X_base_solver_free.p90 \
+    X_base_solver_free.p90 X_base_solver_clone_settings.p90 X_base_solver_clear_data.p90 \
     X_base_solver_csetc.p90 X_base_solver_cseti.p90 X_base_solver_csetr.p90 \
-    X_diag_solver_apply.p90 X_diag_solver_apply_vect.p90 \
+    X_diag_solver_apply.p90 X_diag_solver_apply_vect.p90 X_diag_solver_clear_data.p90 \
     X_diag_solver_bld.p90  X_diag_solver_clone.p90 X_diag_solver_dmp.p90  X_diag_solver_cnv.p90 \
     X_id_solver_apply.p90 X_id_solver_clone.p90 \
     X_id_solver_apply_vect.p90 X_ilu_solver_apply.p90 \
     X_ilu_solver_apply_vect.p90 X_ilu_solver_bld.p90 \
     X_ilu_solver_dmp.p90 X_ilu_solver_clone.p90 X_ilu_solver_cnv.p90 \
-    Xilu0_fact.p90 Xiluk_fact.p90 Xilut_fact.p90 \
+    X_ilu_solver_clear_data.p90 X_ilu_solver_clone_settings.p90 \
     X_gs_solver_apply.p90 X_gs_solver_apply_vect.p90 X_gs_solver_bld.p90 \
-    X_gs_solver_dmp.p90 X_gs_solver_clone.p90 X_gs_solver_cnv.p90\
+    X_gs_solver_dmp.p90 X_gs_solver_clone.p90 X_gs_solver_cnv.p90 \
+    X_gs_solver_clear_data.p90 X_gs_solver_clone_settings.p90 \
     X_bwgs_solver_bld.p90 X_bwgs_solver_apply.p90 X_bwgs_solver_apply_vect.p90 \
-    X_mumps_solver_bld.P90 X_mumps_solver_apply.P90 X_mumps_solver_apply_vect.P90 
+    X_mumps_solver_bld.P90 X_mumps_solver_apply.P90 X_mumps_solver_apply_vect.P90 \
+    X_ainv_solver_bld.p90 X_ainv_solver_check.p90 X_ainv_solver_clone.p90 \
+    X_ainv_solver_csetc.p90 X_ainv_solver_cseti.p90 X_ainv_solver_csetr.p90 \
+    X_ainv_solver_descr.p90  \
+    X_krm_solver_impl.p90 \
+    X_base_ainv_solver_apply_vect.p90 X_base_ainv_solver_apply.p90 \
+    X_base_ainv_solver_cnv.p90 X_base_ainv_solver_dmp.p90 \
+    X_base_ainv_solver_free.p90 X_base_ainv_update_a.p90 \
+    X_invk_solver_bld.p90 X_invk_solver_check.p90 X_invk_solver_clone.p90 \
+    X_invk_solver_cseti.p90 X_invk_solver_descr.p90  \
+    X_invt_solver_bld.p90 X_invt_solver_check.p90 X_invt_solver_clone.p90 \
+    X_invt_solver_cseti.p90 X_invt_solver_descr.p90  \
+    X_invt_solver_csetr.p90 
 
-
-
-
-FSRC1=$(patsubst %.p90, %.f90, $(subst X, mld_$(ARITH), $(filter %.p90, $(SRC))))
-FSRC2=$(patsubst %.P90, %.F90, $(subst X, mld_$(ARITH), $(filter %.P90, $(SRC))))
+FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
+FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
 FOBJS1=$(FSRC1:.f90=.o)
 FOBJS2=$(FSRC2:.F90=.o)
@@ -66,13 +77,14 @@ bsrc: $(FSRC)
 
 lib: $(FOBJS)
 
+cpy:
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/solver *.f90 *.F90)
 
 
-$(FSRC1): mld_$(ARITH)%.f90 : X%.p90
+$(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../../../$(ARITH).sed $< >$@
-$(FSRC2): mld_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90
 	sed -f ../../../$(ARITH).sed $< >$@
 
 clean:
 	/bin/rm -f *.f90 *.F90 *.o
-

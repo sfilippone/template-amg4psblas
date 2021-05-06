@@ -1,4 +1,5 @@
-#include ../../Make.inc
+TOP=../../..
+include $(TOP)/Make.inc
 
 BASIC_MODS=
 UTIL_MODS =
@@ -9,19 +10,23 @@ SRC=X_as_smoother_apply.p90 X_as_smoother_apply_vect.p90 X_as_smoother_bld.p90 \
     X_as_smoother_check.p90 X_as_smoother_dmp.p90 X_as_smoother_free.p90 \
     X_as_smoother_csetc.p90  X_as_smoother_cseti.p90 \
     X_as_smoother_clone.p90 X_as_smoother_cnv.p90 \
+    X_as_smoother_clone_settings.p90 X_as_smoother_clear_data.p90 \
     X_base_smoother_apply.p90 X_base_smoother_apply_vect.p90 X_base_smoother_bld.p90 \
     X_base_smoother_check.p90 X_base_smoother_descr.p90 X_base_smoother_dmp.p90 \
-    X_base_smoother_free.p90  \
+    X_base_smoother_free.p90  X_base_smoother_clone_settings.p90 X_base_smoother_clear_data.p90 \
     X_base_smoother_cseti.p90   X_base_smoother_csetc.p90  X_base_smoother_csetr.p90 \
     X_base_smoother_clone.p90 X_base_smoother_cnv.p90 \
     X_jac_smoother_apply.p90 X_jac_smoother_apply_vect.p90  X_jac_smoother_bld.p90  \
     X_jac_smoother_clone.p90 X_jac_smoother_cnv.p90 X_jac_smoother_dmp.p90 X_jac_smoother_descr.p90 \
-    X_as_smoother_prol_a.p90 X_as_smoother_prol_v.p90 X_as_smoother_restr_a.p90 X_as_smoother_restr_v.p90
+    X_as_smoother_prol_a.p90 X_as_smoother_prol_v.p90 X_as_smoother_restr_a.p90 X_as_smoother_restr_v.p90 \
+    X_jac_smoother_csetc.p90 X_jac_smoother_cseti.p90 X_jac_smoother_csetr.p90 \
+    X_jac_smoother_clone_settings.p90 X_jac_smoother_clear_data.p90 \
+    X_l1_jac_smoother_bld.p90 X_l1_jac_smoother_clone.p90 X_l1_jac_smoother_descr.p90 
 
 
 
-FSRC1=$(patsubst %.p90, %.f90, $(subst X, mld_$(ARITH), $(filter %.p90, $(SRC))))
-FSRC2=$(patsubst %.P90, %.F90, $(subst X, mld_$(ARITH), $(filter %.P90, $(SRC))))
+FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
+FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
 FOBJS1=$(FSRC1:.f90=.o)
 FOBJS2=$(FSRC2:.F90=.o)
@@ -61,13 +66,14 @@ bsrc: $(FSRC)
 
 lib: $(FOBJS)
 
+cpy:
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec/impl/smoother *.f90 *.F90)
 
 
-$(FSRC1): mld_$(ARITH)%.f90 : X%.p90
+$(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../../../$(ARITH).sed $< >$@
-$(FSRC2): mld_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90
 	sed -f ../../../$(ARITH).sed $< >$@
 
 clean:
 	/bin/rm -f *.f90 *.F90 *.o
-

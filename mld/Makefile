@@ -1,4 +1,5 @@
-#include ../../Make.inc
+TOP=..
+include $(TOP)/Make.inc
 
 BASIC_MODS=
 UTIL_MODS =
@@ -10,13 +11,15 @@ SRC=X_prec_type.p90 X_prec_mod.p90 \
   X_as_smoother.p90 X_jac_smoother.p90 X_diag_solver.p90 X_id_solver.p90\
   X_ilu_solver.p90 X_inner_mod.p90 X_ilu_fact_mod.p90 \
   X_umf_solver.P90 X_slu_solver.P90 X_sludist_solver.P90 X_gs_solver.p90 X_mumps_solver.P90\
-  X_base_aggregator_mod.p90 \
-  X_dec_aggregator_mod.p90 X_symdec_aggregator_mod.p90
+  X_krm_solver.p90  X_base_aggregator_mod.p90 \
+  X_dec_aggregator_mod.p90 X_symdec_aggregator_mod.p90 \
+	X_ainv_solver.P90 X_base_ainv_mod.p90 X_invk_solver.p90 X_invt_solver.p90 \
+	X_matchboxp_mod.p90 X_parmatch_aggregator_mod.P90
 
 
 
-FSRC1=$(patsubst %.p90, %.f90, $(subst X, mld_$(ARITH), $(filter %.p90, $(SRC))))
-FSRC2=$(patsubst %.P90, %.F90, $(subst X, mld_$(ARITH), $(filter %.P90, $(SRC))))
+FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
+FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
 FOBJS1=$(FSRC1:.f90=.o)
 FOBJS2=$(FSRC2:.F90=.o)
@@ -48,6 +51,10 @@ iclean:
 	cd impl && $(MAKE) clean
 
 
+cpy:
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/amgprec *.f90 *.F90)
+	cd impl && $(MAKE) cpy
+
 
 all:  single double complex dcompl
 
@@ -74,12 +81,10 @@ X_base_smoother_mod.p90: X_base_solver_mod.p90
 	touch $@
 
 
-$(FSRC1): mld_$(ARITH)%.f90 : X%.p90
+$(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../$(ARITH).sed $< >$@
-$(FSRC2): mld_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90
 	sed -f ../$(ARITH).sed $< >$@
 
 clean: iclean
 	/bin/rm -f *.f90 *.F90 *.o
-
-

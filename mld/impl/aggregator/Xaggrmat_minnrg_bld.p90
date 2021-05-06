@@ -1,14 +1,14 @@
 !   
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,9 +35,9 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@aggrmat_minnrg_asb.F90
+! File: amg_@X@aggrmat_minnrg_bld.F90
 !
-! Subroutine: mld_@X@aggrmat_minnrg_asb
+! Subroutine: amg_@X@aggrmat_minnrg_bld
 ! Version:    @TYPE@
 !
 !  This routine builds a coarse-level matrix A_C from a fine-level matrix A
@@ -50,7 +50,7 @@
 !  The prolongator P_C is built according to a smoothed aggregation algorithm,
 !  i.e. it is obtained by applying a damped Jacobi smoother to the piecewise
 !  constant interpolation operator P corresponding to the fine-to-coarse level 
-!  mapping built by the mld_aggrmap_bld subroutine:
+!  mapping built by the amg_aggrmap_bld subroutine:
 !
 !                            P_C = (I - omega*D^(-1)A) * P,
 !
@@ -58,14 +58,14 @@
 !  of A, and omega is a suitable smoothing parameter. An estimate of the spectral
 !  radius of D^(-1)A, to be used in the computation of omega, is provided, 
 !  according to the value of p%parms%aggr_omega_alg, specified by the user
-!  through mld_@X@precinit and mld_@X@precset.
+!  through amg_@X@precinit and amg_@X@precset.
 !  4. Minimum energy aggregation:
 !    M. Sala, R. Tuminaro: A new Petrov-Galerkin smoothed aggregation preconditioner
 !    for nonsymmetric linear systems, SIAM J. Sci. Comput., 31(1):143-166 (2008)
 !     
 !  On output from this routine the entries of AC, op_prol, op_restr
 !  are still in "global numbering" mode; this is fixed in the calling routine
-!  aggregator%mat_asb.
+!  aggregator%mat_bld.
 !
 !
 ! Arguments:
@@ -74,11 +74,11 @@
 !                  the fine-level matrix.
 !    desc_a     -  type(psb_desc_type), input.
 !                  The communication descriptor of the fine-level matrix.
-!    p          -  type(mld_@X@_onelev_type), input/output.
+!    p          -  type(amg_@X@_onelev_type), input/output.
 !                  The 'one-level' data structure that will contain the local
 !                  part of the matrix to be built as well as the information
 !                  concerning the prolongator and its transpose.
-!    parms      -   type(mld_@RT@ml_parms), input
+!    parms      -   type(amg_@RT@ml_parms), input
 !                  Parameters controlling the choice of algorithm
 !    ac         -  type(psb_@X@spmat_type), output
 !                  The coarse matrix on output 
@@ -104,55 +104,58 @@
 !                  Error code.
 !
 !
-subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_restr,info)
+subroutine amg_@X@aggrmat_minnrg_bld(a,desc_a,ilaggr,nlaggr,parms,&
+     & ac,desc_ac,op_prol,op_restr,info)
   use psb_base_mod
-  use mld_base_prec_type
-  use mld_@X@_inner_mod, mld_protect_name => mld_@X@aggrmat_minnrg_asb
+  use amg_base_prec_type
+  use amg_@X@_inner_mod, amg_protect_name => amg_@X@aggrmat_minnrg_bld
 
   implicit none
 
   ! Arguments
   type(psb_@X@spmat_type), intent(in)           :: a
-  type(psb_desc_type), intent(in)               :: desc_a
-  integer(psb_ipk_), intent(inout)              :: ilaggr(:), nlaggr(:)
-  type(mld_@RT@ml_parms), intent(inout)          :: parms 
-  type(psb_@X@spmat_type), intent(inout)        :: op_prol
-  type(psb_@X@spmat_type), intent(out)          :: ac,op_restr
+  type(psb_desc_type), intent(inout)            :: desc_a
+  integer(psb_lpk_), intent(inout)              :: ilaggr(:), nlaggr(:)
+  type(amg_@RT@ml_parms), intent(inout)         :: parms 
+  type(psb_@LX@spmat_type), intent(inout)       :: op_prol
+  type(psb_@LX@spmat_type), intent(out)         :: ac,op_restr
+  type(psb_desc_type), intent(inout)            :: desc_ac
   integer(psb_ipk_), intent(out)                :: info
 
   ! Local variables
-  integer(psb_ipk_), allocatable       :: nzbr(:), idisp(:)
-  integer(psb_ipk_) :: nrow, nglob, ncol, ntaggr, nzac, ip, ndx,&
-       & naggr, nzl,naggrm1,naggrp1, i, j, k, jd, icolF, nrt, err_act
-  integer(psb_ipk_)           :: ictxt,np,me, icomm
-  character(len=20)            :: name
-  type(psb_@X@spmat_type)      :: af, ptilde, rtilde, atran, atp, atdatp
-  type(psb_@X@spmat_type)      :: am3,am4, ap, adap,atmp,rada, ra, atmp2, dap, dadap, da
-  type(psb_@X@spmat_type)      :: dat, datp, datdatp, atmp3, tmp_prol
-  type(psb_@X@_coo_sparse_mat) :: tmpcoo
-  type(psb_@X@_csr_sparse_mat) :: acsr1, acsr2, acsr3, acsr, acsrf
-  type(psb_@X@_csc_sparse_mat) :: csc_dap, csc_dadap, csc_datp, csc_datdatp, acsc
+  integer(psb_lpk_) :: nrow, nglob, ncol, ntaggr, nzac, ip, ndx,&
+       & naggr, nzl,naggrm1,naggrp1, i, j, k, jd, icolF, nrt
+  type(psb_ctxt_type)       :: ctxt
+  integer(psb_ipk_)         :: np, me, icomm
+  character(len=20)         :: name
+  type(psb_@LX@spmat_type)      :: la, af, ptilde, rtilde, atran, atp, atdatp
+  type(psb_@LX@spmat_type)      :: am3,am4, ap, adap,atmp,rada, ra, atmp2, dap, dadap, da
+  type(psb_@LX@spmat_type)      :: dat, datp, datdatp, atmp3, tmp_prol
+  type(psb_@LX@_coo_sparse_mat) :: tmpcoo
+  type(psb_@LX@_csr_sparse_mat) :: acsr1, acsr2, acsr3, acsr, acsrf
+  type(psb_@LX@_csc_sparse_mat) :: csc_dap, csc_dadap, csc_datp, csc_datdatp, acsc
   @TYPE@(@FKIND@), allocatable :: adiag(:), adinv(:)
   @TYPE@(@FKIND@), allocatable :: omf(:), omp(:), omi(:), oden(:)
   logical                    :: filter_mat
   integer(psb_ipk_)          :: ierr(5)
-  integer(psb_ipk_)          :: debug_level, debug_unit
+  integer(psb_ipk_)          :: debug_level, debug_unit, err_act
   integer(psb_ipk_), parameter :: ncmax=16
   real(@FKIND@)              :: anorm, theta
   @TYPE@(@FKIND@)            :: tmp, alpha, beta, ommx
 
-  name='mld_aggrmat_minnrg'
-  if(psb_get_errstatus().ne.0) return 
+  name='amg_aggrmat_minnrg'
   info=psb_success_
   call psb_erractionsave(err_act)
+  if (psb_errstatus_fatal()) then
+    info = psb_err_internal_error_; goto 9999
+  end if
   debug_unit  = psb_get_debug_unit()
   debug_level = psb_get_debug_level()
 
-  ictxt = desc_a%get_context()
+  ctxt = desc_a%get_context()
   icomm = desc_a%get_mpic()
-  ictxt = desc_a%get_context()
 
-  call psb_info(ictxt, me, np)
+  call psb_info(ctxt, me, np)
 
   nglob = desc_a%get_global_rows()
   nrow  = desc_a%get_local_rows()
@@ -163,17 +166,10 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   naggr  = nlaggr(me+1)
   ntaggr = sum(nlaggr)
 
-  allocate(nzbr(np), idisp(np),stat=info)
-  if (info /= psb_success_) then 
-    info=psb_err_alloc_request_; ierr(1)=2*np;
-    call psb_errpush(info,name,i_err=ierr,a_err='integer')
-    goto 9999      
-  end if
-
   naggrm1 = sum(nlaggr(1:me))
   naggrp1 = sum(nlaggr(1:me+1))
 
-  filter_mat = (parms%aggr_filter == mld_filter_mat_)
+  filter_mat = (parms%aggr_filter == amg_filter_mat_)
 
   ! naggr: number of local aggregates
   ! nrow: local rows. 
@@ -193,6 +189,11 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
        & call psb_realloc(ncol,adiag,info)    
   if (info == psb_success_) &
        & call psb_halo(adiag,desc_a,info)
+  if (info == psb_success_) call a%cp_to_l(la)
+  if (info /= psb_success_) then
+    call psb_errpush(psb_err_from_subroutine_,name,a_err='sp_getdiag')
+    goto 9999
+  end if
 
   do i=1,size(adiag)
     if (adiag(i) /= @XZERO@) then
@@ -202,10 +203,6 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
     end if
   end do
 
-  if (info /= psb_success_) then
-    call psb_errpush(psb_err_from_subroutine_,name,a_err='sp_getdiag')
-    goto 9999
-  end if
 
 
   ! 1. Allocate Ptilde in sparse matrix form 
@@ -213,8 +210,8 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   call ptilde%mv_from(tmpcoo)
   call ptilde%cscnv(info,type='csr')
 
-  if (info == psb_success_) call a%cscnv(am3,info,type='csr',dupl=psb_dupl_add_)
-  if (info == psb_success_) call a%cscnv(da,info,type='csr',dupl=psb_dupl_add_)
+  if (info == psb_success_) call la%cscnv(am3,info,type='csr',dupl=psb_dupl_add_)
+  if (info == psb_success_) call la%cscnv(da,info,type='csr',dupl=psb_dupl_add_)
   if (info /= psb_success_) then
     call psb_errpush(psb_err_from_subroutine_,name,a_err='spcnv')
     goto 9999
@@ -225,11 +222,10 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
 
   call da%scal(adinv,info)
 
-  call psb_symbmm(da,ptilde,dap,info)
-  if (info == psb_success_) call psb_numbmm(da,ptilde,dap)
+  call psb_spspmm(da,ptilde,dap,info)
 
   if(info /= psb_success_) then
-    call psb_errpush(psb_err_from_subroutine_,name,a_err='symbmm 1')
+    call psb_errpush(psb_err_from_subroutine_,name,a_err='spspmm 1')
     goto 9999
   end if
 
@@ -240,8 +236,7 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   if (info == psb_success_) call psb_rwextd(ncol,atmp,info,b=am4)      
   if (info == psb_success_) call am4%free()
 
-  call psb_symbmm(da,atmp,dadap,info)
-  call psb_numbmm(da,atmp,dadap)
+  call psb_spspmm(da,atmp,dadap,info)
   call atmp%free()
 
   !  !$  write(0,*) 'Columns of AP',psb_sp_get_ncols(ap)
@@ -249,11 +244,10 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   call dap%mv_to(csc_dap)
   call dadap%mv_to(csc_dadap)
 
-
   call csc_mat_col_prod(csc_dap,csc_dadap,omp,info)
   call csc_mat_col_prod(csc_dadap,csc_dadap,oden,info)
-  call psb_sum(ictxt,omp)
-  call psb_sum(ictxt,oden)
+  call psb_sum(ctxt,omp)
+  call psb_sum(ctxt,oden)
   ! !$  write(0,*) trim(name),' OMP :',omp
   ! !$  write(0,*) trim(name),' ODEN:',oden
 
@@ -268,7 +262,11 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   ! Compute omega_int
   ommx = @XZERO@
   do i=1, ncol
-    omi(i) = omp(ilaggr(i))
+    if (ilaggr(i) >0) then 
+      omi(i) = omp(ilaggr(i))
+    else
+      omi(i) = @XZERO@
+    end if
     if(abs(omi(i)) .gt. abs(ommx)) ommx = omi(i)
   end do
   ! Compute omega_fine
@@ -287,7 +285,7 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
     !
     ! Build the filtered matrix Af from A
     ! 
-    call a%cscnv(acsrf,info,dupl=psb_dupl_add_)
+    call la%cscnv(acsrf,info,dupl=psb_dupl_add_)
 
     do i=1,nrow
       tmp = @XZERO@
@@ -327,23 +325,14 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
 
     call af%mv_from(acsrf)
     !
-    ! Symbmm90 does the allocation for its result.
-    ! 
     ! op_prol = (I-w*D*Af)Ptilde
     ! Doing it this way means to consider diag(Af_i)
     ! 
     !
-    call psb_symbmm(af,ptilde,op_prol,info)
-    if(info /= psb_success_) then
-      call psb_errpush(psb_err_from_subroutine_,name,a_err='symbmm 1')
-      goto 9999
-    end if
-
-    call psb_numbmm(af,ptilde,op_prol)
-
+    call psb_spspmm(af,ptilde,op_prol,info)
     if (debug_level >= psb_debug_outer_) &
          & write(debug_unit,*) me,' ',trim(name),&
-         & 'Done NUMBMM 1'
+         & 'Done SPSPMM 1'
   else
     !
     ! Build the smoothed prolongator using the original matrix
@@ -363,19 +352,11 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
          & write(debug_unit,*) me,' ',trim(name),&
          & 'Done gather, going for SYMBMM 1'
     !
-    ! Symbmm90 does the allocation for its result.
     ! 
     ! op_prol = (I-w*D*A)Ptilde
     ! 
     !
-    call psb_symbmm(am3,ptilde,op_prol,info)
-    if(info /= psb_success_) then
-      call psb_errpush(psb_err_from_subroutine_,name,a_err='symbmm 1')
-      goto 9999
-    end if
-
-    call psb_numbmm(am3,ptilde,op_prol)
-
+    call psb_spspmm(am3,ptilde,op_prol,info)
     if (debug_level >= psb_debug_outer_) &
          & write(debug_unit,*) me,' ',trim(name),&
          & 'Done NUMBMM 1'
@@ -387,11 +368,11 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   ! Ok, let's start over with the restrictor
   ! 
   call ptilde%transc(rtilde)
-  call a%cscnv(atmp,info,type='csr')
+  call la%cscnv(atmp,info,type='csr')
   call psb_sphalo(atmp,desc_a,am4,info,&
        & colcnv=.true.,rowscale=.true.)
   nrt  = am4%get_nrows() 
-  call am4%csclip(atmp2,info,ione,nrt,ione,ncol)
+  call am4%csclip(atmp2,info,lone,nrt,lone,ncol)
   call atmp2%cscnv(info,type='CSR')
   if (info == psb_success_) call psb_rwextd(ncol,atmp,info,b=atmp2)      
   call am4%free()
@@ -400,13 +381,12 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   ! This is to compute the transpose. It ONLY works if the
   ! original A has a symmetric pattern.
   call atmp%transc(atmp2) 
-  call atmp2%csclip(dat,info,ione,nrow,ione,ncol)
+  call atmp2%csclip(dat,info,lone,nrow,lone,ncol)
   call dat%cscnv(info,type='csr')
   call dat%scal(adinv,info)
 
   ! Now for the product. 
-  call psb_symbmm(dat,ptilde,datp,info)
-  if (info == psb_success_) call psb_numbmm(dat,ptilde,datp)
+  call psb_spspmm(dat,ptilde,datp,info)
 
   call datp%clone(atmp2,info)
   call psb_sphalo(atmp2,desc_a,am4,info,&
@@ -424,8 +404,8 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
 
   call csc_mat_col_prod(csc_datp,csc_datdatp,omp,info)
   call csc_mat_col_prod(csc_datdatp,csc_datdatp,oden,info)
-  call psb_sum(ictxt,omp)
-  call psb_sum(ictxt,oden)
+  call psb_sum(ctxt,omp)
+  call psb_sum(ctxt,oden)
 
 
   ! !$  write(debug_unit,*) trim(name),' OMP_R :',omp
@@ -435,7 +415,11 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   ! Compute omega_int
   ommx = @XZERO@
   do i=1, ncol
-    omi(i) = omp(ilaggr(i))
+    if (ilaggr(i) >0) then 
+      omi(i) = omp(ilaggr(i))
+    else
+      omi(i) = @XZERO@
+    end if
     if(abs(omi(i)) .gt. abs(ommx)) ommx = omi(i)
   end do
   ! Compute omega_fine
@@ -484,8 +468,7 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
   call rtilde%mv_from(tmpcoo)
   call rtilde%cscnv(info,type='csr')
 
-  call psb_symbmm(rtilde,atmp,op_restr,info)
-  call psb_numbmm(rtilde,atmp,op_restr)
+  call psb_spspmm(rtilde,atmp,op_restr,info)
 
   !
   ! Now we have to gather the halo of op_prol, and add it to itself
@@ -527,16 +510,10 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
        & write(debug_unit,*) me,' ',trim(name),&
        & 'starting sphalo/ rwxtd'
 
-  call psb_symbmm(a,tmp_prol,am3,info)
-  if(info /= psb_success_) then
-    call psb_errpush(psb_err_from_subroutine_,name,&
-         & a_err='symbmm 2')
-    goto 9999
-  end if
-  call psb_numbmm(a,tmp_prol,am3)
+  call psb_spspmm(la,tmp_prol,am3,info)
   if (debug_level >= psb_debug_outer_) &
        & write(debug_unit,*) me,' ',trim(name),&
-       & 'Done NUMBMM 2'
+       & 'Done SPSPMM 2'
 
   call psb_sphalo(am3,desc_a,am4,info,&
        & colcnv=.false.,rowscale=.true.)
@@ -552,8 +529,7 @@ subroutine mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr,parms,ac,op_prol,op_
        & write(debug_unit,*) me,' ',trim(name),&
        & 'Done sphalo/ rwxtd'
 
-  call psb_symbmm(op_restr,am3,ac,info)
-  if (info == psb_success_) call psb_numbmm(op_restr,am3,ac)
+  call psb_spspmm(op_restr,am3,ac,info)
   if (info == psb_success_) call am3%free()
   if (info == psb_success_) call ac%cscnv(info,type='coo',dupl=psb_dupl_add_)
 
@@ -581,11 +557,11 @@ contains
 
   subroutine csc_mat_col_prod(a,b,v,info)
     implicit none 
-    type(psb_@X@_csc_sparse_mat), intent(in) :: a, b 
+    type(psb_@LX@_csc_sparse_mat), intent(in) :: a, b 
     @TYPE@(@FKIND@), intent(out)             :: v(:)
     integer(psb_ipk_), intent(out)           :: info
 
-    integer(psb_ipk_)                           :: i,j,k, nr, nc,iap,nra,ibp,nrb
+    integer(psb_lpk_)                           :: i,j,k, nr, nc,iap,nra,ibp,nrb
 
     info = psb_success_
     nc   = a%get_ncols()
@@ -609,11 +585,11 @@ contains
 
   subroutine csr_mat_row_prod(a,b,v,info)
     implicit none 
-    type(psb_@X@_csr_sparse_mat), intent(in) :: a, b 
+    type(psb_@LX@_csr_sparse_mat), intent(in) :: a, b 
     @TYPE@(@FKIND@), intent(out)             :: v(:)
     integer(psb_ipk_), intent(out)           :: info
 
-    integer(psb_ipk_)                        :: i,j,k, nr, nc,iap,nca,ibp,ncb
+    integer(psb_lpk_)                        :: i,j,k, nr, nc,iap,nca,ibp,ncb
 
     info = psb_success_
     nr   = a%get_nrows()
@@ -637,12 +613,12 @@ contains
 
   function sparse_srtd_dot(nv1,iv1,v1,nv2,iv2,v2) result(dot) 
     implicit none 
-    integer(psb_ipk_), intent(in) :: nv1,nv2
-    integer(psb_ipk_), intent(in) :: iv1(:), iv2(:)
+    integer(psb_lpk_), intent(in) :: nv1,nv2
+    integer(psb_lpk_), intent(in) :: iv1(:), iv2(:)
     @TYPE@(@FKIND@), intent(in) :: v1(:),v2(:)
     @TYPE@(@FKIND@)      :: dot
 
-    integer(psb_ipk_) :: i,j,k, ip1, ip2
+    integer(psb_lpk_) :: i,j,k, ip1, ip2
 
     dot = @XZERO@ 
     ip1 = 1
@@ -665,7 +641,7 @@ contains
   end function sparse_srtd_dot
 
   subroutine local_dump(me,mat,name,header)
-    type(psb_@X@spmat_type), intent(in) :: mat
+    type(psb_@LX@spmat_type), intent(in) :: mat
     integer(psb_ipk_), intent(in)       :: me
     character(len=*), intent(in)        :: name
     character(len=*), intent(in)        :: header
@@ -677,4 +653,4 @@ contains
     close(20+me)
   end subroutine local_dump
 
-end subroutine mld_@X@aggrmat_minnrg_asb
+end subroutine amg_@X@aggrmat_minnrg_bld 

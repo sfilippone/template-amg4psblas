@@ -1,4 +1,5 @@
-#include ../../Make.inc
+TOP=..
+include $(TOP)/Make.inc
 
 BASIC_MODS=
 UTIL_MODS =
@@ -9,8 +10,8 @@ SRC=
 
 
 
-FSRC1=$(patsubst %.p90, %.f90, $(subst X, mld_$(ARITH), $(filter %.p90, $(SRC))))
-FSRC2=$(patsubst %.P90, %.F90, $(subst X, mld_$(ARITH), $(filter %.P90, $(SRC))))
+FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
+FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
 FOBJS1=$(FSRC1:.f90=.o)
 FOBJS2=$(FSRC2:.F90=.o)
@@ -63,18 +64,15 @@ bsrc: $(FSRC)
 
 lib: $(FOBJS)
 
-
-X_prec_type.p90: X_onelev_mod.p90
-	touch $@
-X_onelev_mod.p90: X_base_smoother_mod.p90
-	touch $@
-X_base_smoother_mod.p90: X_base_solver_mod.p90
-	touch $@
+cpy: 
+	$(TOP)/cpy.sh $(TOP) $(TARGET)/examples *.f90 *.F90
+	cd fileread && $(MAKE) cpy
+	cd pdegen && $(MAKE) cpy	
 
 
-$(FSRC1): mld_$(ARITH)%.f90 : X%.p90
+$(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../$(ARITH).sed $< >$@
-$(FSRC2): mld_$(ARITH)%.F90 : X%.P90 
+$(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
 	sed -f ../$(ARITH).sed $< >$@
 
 clean: pdeclean fileclean

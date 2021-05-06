@@ -1,14 +1,14 @@
 !  
 !   
-!                             MLD2P4  version 2.2
-!    MultiLevel Domain Decomposition Parallel Preconditioners Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.5)
+!                             AMG4PSBLAS version 1.0
+!    Algebraic Multigrid Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
 !    
-!    (C) Copyright 2008-2018 
+!    (C) Copyright 2021 
 !  
 !        Salvatore Filippone  
 !        Pasqua D'Ambra   
-!        Daniela di Serafino   
+!        Fabio Durastante        
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -18,14 +18,14 @@
 !      2. Redistributions in binary form must reproduce the above copyright
 !         notice, this list of conditions, and the following disclaimer in the
 !         documentation and/or other materials provided with the distribution.
-!      3. The name of the MLD2P4 group or the names of its contributors may
+!      3. The name of the AMG4PSBLAS group or the names of its contributors may
 !         not be used to endorse or promote products derived from this
 !         software without specific written permission.
 !   
 !    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 !    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 !    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE MLD2P4 GROUP OR ITS CONTRIBUTORS
+!    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AMG4PSBLAS GROUP OR ITS CONTRIBUTORS
 !    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 !    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -35,73 +35,18 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-! File: mld_@X@_dec_aggregator_mat_asb.f90
+! File: amg_@X@_dec_aggregator_mat_asb.f90
 !
-! Subroutine: mld_@X@_dec_aggregator_mat_asb
+! Subroutine: amg_@X@_dec_aggregator_mat_asb
 ! Version:    @TYPE@
 !
-!  This routine builds the matrix associated to the current level of the
-!  multilevel preconditioner from the matrix associated to the previous level,
-!  by using the user-specified aggregation technique (therefore, it also builds the
-!  prolongation and restriction operators mapping the current level to the
-!  previous one and vice versa). 
-!  The current level is regarded as the coarse one, while the previous as
-!  the fine one. This is in agreement with the fact that the routine is called,
-!  by mld_mlprec_bld, only on levels >=2.
-!  The coarse-level matrix A_C is built from a fine-level matrix A
-!  by using the Galerkin approach, i.e.
 !
-!                               A_C = P_C^T A P_C,
-!
-!  where P_C is a prolongator from the coarse level to the fine one.
-! 
-!  A mapping from the nodes of the adjacency graph of A to the nodes of the
-!  adjacency graph of A_C has been computed by the mld_aggrmap_bld subroutine.
-!  The prolongator P_C is built here from this mapping, according to the
-!  value of p%iprcparm(mld_aggr_kind_), specified by the user through
-!  mld_@X@precinit and mld_zprecset.
-!  On output from this routine the entries of AC, op_prol, op_restr
-!  are still in "global numbering" mode; this is fixed in the calling routine
-!  mld_@X@_lev_aggrmat_asb.
-!
-!  Currently four  different prolongators are implemented, corresponding to
-!  four  aggregation algorithms:
-!  1. un-smoothed aggregation,
-!  2. smoothed aggregation,
-!  3. "bizarre" aggregation.
-!  4. minimum energy 
-!  1. The non-smoothed aggregation uses as prolongator the piecewise constant
-!     interpolation operator corresponding to the fine-to-coarse level mapping built
-!     by p%aggr%bld_tprol. This is called tentative prolongator.
-!  2. The smoothed aggregation uses as prolongator the operator obtained by applying
-!     a damped Jacobi smoother to the tentative prolongator.
-!  3. The "bizarre" aggregation uses a prolongator proposed by the authors of MLD2P4.
-!     This prolongator still requires a deep analysis and testing and its use is
-!     not recommended.
-!  4. Minimum energy aggregation
-!
-!  For more details see
-!    M. Brezina and P. Vanek, A black-box iterative solver based on a two-level
-!    Schwarz method, Computing,  63 (1999), 233-263.
-!    P. Vanek, J. Mandel and M. Brezina, Algebraic Multigrid by Smoothed
-!    Aggregation for Second and Fourth Order Elliptic Problems, Computing, 56
-!    (1996), 179-196.
-!    P. D'Ambra, D. di Serafino and S. Filippone, On the development of PSBLAS-based
-!    parallel two-level Schwarz preconditioners, Appl. Num. Math., 57 (2007),
-!    1181-1196.
-!    M. Sala, R. Tuminaro: A new Petrov-Galerkin smoothed aggregation preconditioner
-!    for nonsymmetric linear systems, SIAM J. Sci. Comput., 31(1):143-166 (2008)
-!
-!
-!  The main structure is:
-!  1. Perform sanity checks;
-!  2. Compute prolongator/restrictor/AC
-!
+!  From a given AC to final format, generating DESC_AC
 ! 
 ! Arguments:
-!    ag       -  type(mld_@X@_dec_aggregator_type), input/output.
+!    ag       -  type(amg_@X@_dec_aggregator_type), input/output.
 !               The aggregator object
-!    parms   -  type(mld_@RT@ml_parms), input 
+!    parms   -  type(amg_@RT@ml_parms), input 
 !               The aggregation parameters
 !    a          -  type(psb_@X@spmat_type), input.     
 !                  The sparse matrix structure containing the local part of
@@ -121,87 +66,109 @@
 !                  the various processes do not   overlap.
 !    nlaggr     -  integer, dimension(:) input
 !                  nlaggr(i) contains the aggregates held by process i.
-!    ac         -  type(psb_@X@spmat_type), output
-!                  The coarse matrix on output 
+!    ac         -  type(psb_@X@spmat_type), inout
+!                  The coarse matrix 
+!    desc_ac    -  type(psb_desc_type), output.
+!                  The communication descriptor of the fine-level matrix.
+!                  The 'one-level' data structure that will contain the local
+!                  part of the matrix to be built as well as the information
+!                  concerning the prolongator and its transpose.
 !                  
 !    op_prol    -  type(psb_@X@spmat_type), input/output
 !                  The tentative prolongator on input, the computed prolongator on output
 !               
-!    op_restr    -  type(psb_@X@spmat_type), output
+!    op_restr    -  type(psb_@X@spmat_type), input/output
 !                  The restrictor operator; normally, it is the transpose of the prolongator. 
 !               
 !    info       -  integer, output.
 !                  Error code.
 !  
-subroutine  mld_@X@_dec_aggregator_mat_asb(ag,parms,a,desc_a,ilaggr,nlaggr,ac,op_prol,op_restr,info)
+subroutine  amg_@X@_dec_aggregator_mat_asb(ag,parms,a,desc_a,&
+     & ac,desc_ac, op_prol,op_restr,info)
   use psb_base_mod
-  use mld_@X@_prec_type, mld_protect_name => mld_@X@_dec_aggregator_mat_asb
-  use mld_@X@_inner_mod 
+  use amg_base_prec_type
+  use amg_@X@_dec_aggregator_mod, amg_protect_name => amg_@X@_dec_aggregator_mat_asb
   implicit none
-  
-  class(mld_@X@_dec_aggregator_type), target, intent(inout) :: ag
-  type(mld_@RT@ml_parms), intent(inout)      :: parms 
+  class(amg_@X@_dec_aggregator_type), target, intent(inout) :: ag
+  type(amg_@RT@ml_parms), intent(inout)  :: parms 
   type(psb_@X@spmat_type), intent(in)    :: a
-  type(psb_desc_type), intent(in)      :: desc_a
-  integer(psb_ipk_), intent(inout)     :: ilaggr(:), nlaggr(:)
-  type(psb_@X@spmat_type), intent(inout)   :: op_prol
-  type(psb_@X@spmat_type), intent(out)   :: ac,op_restr
-  integer(psb_ipk_), intent(out)       :: info
+  type(psb_desc_type), intent(inout)     :: desc_a
+  type(psb_@X@spmat_type), intent(inout) :: op_prol, ac,op_restr
+  type(psb_desc_type), intent(inout)     :: desc_ac
+  integer(psb_ipk_), intent(out)         :: info
+  !
+  type(psb_ctxt_type)            :: ctxt
+  integer(psb_ipk_)              :: np, me
+  type(psb_@LX@_coo_sparse_mat)  :: tmpcoo
+  type(psb_@LX@spmat_type)       :: tmp_ac
+  integer(psb_ipk_)              :: i_nr, i_nc, i_nl, nzl
+  integer(psb_lpk_)              :: ntaggr
+  integer(psb_ipk_) :: err_act, debug_level, debug_unit
+  character(len=20) :: name='@X@_dec_aggregator_mat_asb'
 
-  ! Local variables
-  character(len=20)             :: name
-  integer(psb_mpik_)            :: ictxt, np, me
-  type(psb_@X@_coo_sparse_mat) :: acoo, bcoo
-  type(psb_@X@_csr_sparse_mat) :: acsr1
-  integer(psb_ipk_)            :: nzl,ntaggr
-  integer(psb_ipk_)             :: err_act
-  integer(psb_ipk_)            :: debug_level, debug_unit
 
-  name='mld_@X@_dec_aggregator_mat_asb'
   if (psb_get_errstatus().ne.0) return 
   call psb_erractionsave(err_act)
   debug_unit  = psb_get_debug_unit()
   debug_level = psb_get_debug_level()
   info  = psb_success_
-  ictxt = desc_a%get_context()
-  call psb_info(ictxt,me,np)
+  ctxt = desc_a%get_context()
+  call psb_info(ctxt,me,np)
 
-  !
-  ! Build the coarse-level matrix from the fine-level one, starting from 
-  ! the mapping defined by mld_aggrmap_bld and applying the aggregation
-  ! algorithm specified by 
-  !
-  select case (parms%aggr_prol)
-  case (mld_no_smooth_) 
+  select case(parms%coarse_mat)
 
-    call mld_@X@aggrmat_nosmth_asb(a,desc_a,ilaggr,nlaggr,&
-         & parms,ac,op_prol,op_restr,info)
+  case(amg_distr_mat_) 
 
-  case(mld_smooth_prol_) 
+    call ac%cscnv(info,type='csr')
+    call op_prol%cscnv(info,type='csr')
+    call op_restr%cscnv(info,type='csr')
 
-    call mld_@X@aggrmat_smth_asb(a,desc_a,ilaggr,nlaggr, &
-         & parms,ac,op_prol,op_restr,info)
+    if (debug_level >= psb_debug_outer_) &
+         & write(debug_unit,*) me,' ',trim(name),&
+         & 'Done ac '
 
-  case(mld_biz_prol_) 
+  case(amg_repl_mat_) 
+    !
+    ! We are assuming here that an @X@ matrix
+    ! can hold all entries
+    !
+    if (desc_ac%get_global_rows() < huge(1_psb_ipk_) ) then 
+      ntaggr = desc_ac%get_global_rows()
+      i_nr   = ntaggr
+    else
+      info = psb_err_internal_error_
+      call psb_errpush(info,name,a_err='invalid amg_coarse_mat_')
+      goto 9999
+    end if
+    
+    call op_prol%mv_to(tmpcoo)
+    nzl = tmpcoo%get_nzeros()
+    call psb_loc_to_glob(tmpcoo%ja(1:nzl),desc_ac,info,'I')
+    call tmpcoo%set_ncols(i_nr)
+    call op_prol%mv_from(tmpcoo)
 
-    call mld_@X@aggrmat_biz_asb(a,desc_a,ilaggr,nlaggr, &
-         & parms,ac,op_prol,op_restr,info)
+    call op_restr%mv_to(tmpcoo)
+    nzl = tmpcoo%get_nzeros()
+    call psb_loc_to_glob(tmpcoo%ia(1:nzl),desc_ac,info,'I')
+    call tmpcoo%set_nrows(i_nr)
+    call op_restr%mv_from(tmpcoo)
 
-  case(mld_min_energy_) 
 
-    call mld_@X@aggrmat_minnrg_asb(a,desc_a,ilaggr,nlaggr, &
-         & parms,ac,op_prol,op_restr,info)
+    call psb_gather(tmp_ac,ac,desc_ac,info,root=-ione,&
+         & dupl=psb_dupl_add_,keeploc=.false.)
+    call tmp_ac%mv_to(tmpcoo)
+    call ac%mv_from(tmpcoo)
+    
+    call psb_cdall(ctxt,desc_ac,info,mg=ntaggr,repl=.true.)
+    if (info == psb_success_) call psb_cdasb(desc_ac,info)
 
-  case default
+    if (info /= psb_success_) goto 9999
+
+  case default 
     info = psb_err_internal_error_
-    call psb_errpush(info,name,a_err='Invalid aggr kind')
+    call psb_errpush(info,name,a_err='invalid amg_coarse_mat_')
     goto 9999
-
   end select
-  if (info /= psb_success_) then
-    call psb_errpush(psb_err_from_subroutine_,name,a_err='Inner aggrmat asb')
-    goto 9999
-  end if
 
 
   call psb_erractionrestore(err_act)
@@ -210,5 +177,20 @@ subroutine  mld_@X@_dec_aggregator_mat_asb(ag,parms,a,desc_a,ilaggr,nlaggr,ac,op
 9999 call psb_error_handler(err_act)
   return
 
-  
-end subroutine mld_@X@_dec_aggregator_mat_asb
+
+contains
+  subroutine check_coo(me,string,coo)
+    implicit none
+    integer(psb_ipk_) :: me
+    type(psb_@LX@_coo_sparse_mat) :: coo
+    character(len=*) :: string
+    integer(psb_lpk_) :: nr,nc,nz
+    nr = coo%get_nrows()
+    nc = coo%get_ncols()
+    nz = coo%get_nzeros()
+    write(0,*) me,string,nr,nc,&
+         & minval(coo%ia(1:nz)),maxval(coo%ia(1:nz)),&
+         & minval(coo%ja(1:nz)),maxval(coo%ja(1:nz))
+
+  end subroutine check_coo
+end subroutine amg_@X@_dec_aggregator_mat_asb

@@ -1,4 +1,4 @@
-TOP=../..
+TOP=../../..
 include $(TOP)/Make.inc
 
 BASIC_MODS=
@@ -54,7 +54,7 @@ bsrc: $(FSRC)
 lib: $(FOBJS)
 
 cpy:
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/tests/pdegen *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/samples/advanced/pdegen *.f90 *.F90)
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90

@@ -6,7 +6,10 @@ UTIL_MODS =
 
 MODULES=$(BASIC_MODS) $(UTIL_MODS)
 
-SRC=Xf_sample.p90
+SRC=
+
+
+
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
 FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
@@ -22,7 +25,7 @@ CINCLUDES=-I.
 FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FIFLAG).
 
 
-src: ssingle sdouble scomplex sdcompl 
+src: spde sfile
 ssingle:
 	$(MAKE) bsrc ARITH=s
 sdouble:
@@ -31,6 +34,19 @@ scomplex:
 	$(MAKE) bsrc ARITH=c
 sdcompl:
 	$(MAKE) bsrc ARITH=z
+
+
+spde:
+	cd pdegen && $(MAKE) src
+sfile:
+	cd fileread && $(MAKE) src
+
+pdeclean:
+	cd pdegen && $(MAKE) clean
+fileclean:
+	cd fileread && $(MAKE) clean
+
+
 
 all:  single double complex dcompl
 
@@ -48,16 +64,18 @@ bsrc: $(FSRC)
 
 lib: $(FOBJS)
 
-cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/tests/fileread *.f90 *.F90)
 
+cpy: 
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/samples/advanced *.f90 *.F90)
+	cd fileread && $(MAKE) cpy
+	cd pdegen && $(MAKE) cpy	
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
-	sed -f $(TOP)/$(ARITH).sed $< >$@
+	sed -f ../$(ARITH).sed $< >$@
 $(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
-	sed -f $(TOP)/$(ARITH).sed $< >$@
+	sed -f ../$(ARITH).sed $< >$@
 
-clean:
+clean: pdeclean fileclean
 	/bin/rm -f *.f90 *.F90 *.o
 
 

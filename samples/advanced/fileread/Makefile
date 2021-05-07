@@ -1,4 +1,4 @@
-TOP=../..
+TOP=../../..
 include $(TOP)/Make.inc
 
 BASIC_MODS=
@@ -6,7 +6,7 @@ UTIL_MODS =
 
 MODULES=$(BASIC_MODS) $(UTIL_MODS)
 
-SRC=Xexample_1lev.p90 Xexample_ml.p90 Xpde_mod.p90
+SRC=Xf_sample.p90
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
 FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
@@ -22,8 +22,7 @@ CINCLUDES=-I.
 FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FIFLAG).
 
 
-src: ssingle sdouble 
-
+src: ssingle sdouble scomplex sdcompl 
 ssingle:
 	$(MAKE) bsrc ARITH=s
 sdouble:
@@ -50,7 +49,7 @@ bsrc: $(FSRC)
 lib: $(FOBJS)
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/examples/pdegen *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/samples/advanced/fileread *.f90 *.F90)
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
@@ -58,7 +57,7 @@ $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 $(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
 	sed -f $(TOP)/$(ARITH).sed $< >$@
 
-clean:  
+clean:
 	/bin/rm -f *.f90 *.F90 *.o
 
 

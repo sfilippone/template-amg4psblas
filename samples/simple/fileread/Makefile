@@ -49,7 +49,7 @@ bsrc: $(FSRC)
 lib: $(FOBJS)
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/examples/fileread *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/samples/simple/fileread *.f90 *.F90)
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90

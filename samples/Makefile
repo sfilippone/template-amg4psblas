@@ -25,7 +25,7 @@ CINCLUDES=-I.
 FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FIFLAG).
 
 
-src: spde sfile
+src: ssimple sadvanced
 ssingle:
 	$(MAKE) bsrc ARITH=s
 sdouble:
@@ -36,15 +36,15 @@ sdcompl:
 	$(MAKE) bsrc ARITH=z
 
 
-spde:
-	cd pdegen && $(MAKE) src
-sfile:
-	cd fileread && $(MAKE) src
+ssimple:
+	cd simple && $(MAKE) src
+sadvanced:
+	cd advanced && $(MAKE) src
 
-pdeclean:
-	cd pdegen && $(MAKE) clean
-fileclean:
-	cd fileread && $(MAKE) clean
+simpleclean:
+	cd simple && $(MAKE) clean
+advancedclean:
+	cd advanced && $(MAKE) clean
 
 
 
@@ -64,18 +64,18 @@ bsrc: $(FSRC)
 
 lib: $(FOBJS)
 
-cpy: 
-	$(TOP)/cpy.sh $(TOP) $(TARGET)/examples *.f90 *.F90
-	cd fileread && $(MAKE) cpy
-	cd pdegen && $(MAKE) cpy	
 
+cpy: 
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/samples *.f90 *.F90)
+	cd simple && $(MAKE) cpy
+	cd advanced && $(MAKE) cpy	
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
 	sed -f ../$(ARITH).sed $< >$@
 $(FSRC2): amg_$(ARITH)%.F90 : X%.P90 
 	sed -f ../$(ARITH).sed $< >$@
 
-clean: pdeclean fileclean
+clean: simpleclean advancedclean
 	/bin/rm -f *.f90 *.F90 *.o
 
 

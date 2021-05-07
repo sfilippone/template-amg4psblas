@@ -1,4 +1,4 @@
-TOP=..
+TOP=../..
 include $(TOP)/Make.inc
 
 BASIC_MODS=
@@ -66,7 +66,7 @@ lib: $(FOBJS)
 
 
 cpy: 
-	($(TOP)/cpy.sh $(TOP) $(TARGET)/tests *.f90 *.F90)
+	($(TOP)/cpy.sh $(TOP) $(TARGET)/samples/advanced *.f90 *.F90)
 	cd fileread && $(MAKE) cpy
 	cd pdegen && $(MAKE) cpy	
 

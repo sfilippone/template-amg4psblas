@@ -16,8 +16,7 @@ esac
 
 if [ ! -d $target ]
 then
-    echo "Target directory does not exist: $target";
-    exit 1;
+    mkdir $target
 fi
 
 if [ "x$files" == "x" ]

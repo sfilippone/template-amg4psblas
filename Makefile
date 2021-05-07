@@ -6,16 +6,13 @@ UTIL_MODS =
 
 src:
 	cd mld && $(MAKE) src
-	cd examples && $(MAKE) src
-	cd test && $(MAKE) src
+	cd samples && $(MAKE) src
 
 cpy: src
 	cd mld && $(MAKE) cpy
-	cd examples && $(MAKE) cpy
-	cd test && $(MAKE) cpy
+	cd samples && $(MAKE) cpy
 
 clean:
 	cd mld && $(MAKE) clean
-	cd examples && $(MAKE) clean
-	cd test && $(MAKE) clean
+	cd samples && $(MAKE) clean
 

@@ -58,7 +58,7 @@ subroutine  amg_@X@_parmatch_aggregator_build_tprol(ag,parms,ag_data,&
   type(amg_@RT@ml_parms), intent(inout)   :: parms
   type(amg_@RT@aggr_data), intent(in)     :: ag_data
   type(psb_@X@spmat_type), intent(inout) :: a
-  type(psb_desc_type), intent(inout)   :: desc_a
+  type(psb_desc_type), intent(inout)      :: desc_a
   integer(psb_lpk_), allocatable, intent(out) :: ilaggr(:),nlaggr(:)
   type(psb_@LX@spmat_type), intent(out)  :: t_prol
   integer(psb_ipk_), intent(out)      :: info

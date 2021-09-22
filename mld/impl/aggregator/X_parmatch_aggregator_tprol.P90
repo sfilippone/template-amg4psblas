@@ -48,7 +48,7 @@ subroutine  amg_@X@_parmatch_aggregator_build_tprol(ag,parms,ag_data,&
   use amg_base_prec_type
   use amg_@X@_inner_mod
 #if defined(SERIAL_MPI)
-    use amg_@X@_parmatch_aggregator_mod
+  use amg_@X@_parmatch_aggregator_mod
 #else
   use amg_@X@_parmatch_aggregator_mod, amg_protect_name => amg_@X@_parmatch_aggregator_build_tprol
 #endif
@@ -58,7 +58,7 @@ subroutine  amg_@X@_parmatch_aggregator_build_tprol(ag,parms,ag_data,&
   type(amg_@RT@ml_parms), intent(inout)   :: parms
   type(amg_@RT@aggr_data), intent(in)     :: ag_data
   type(psb_@X@spmat_type), intent(inout) :: a
-  type(psb_desc_type), intent(inout)   :: desc_a
+  type(psb_desc_type), intent(inout)      :: desc_a
   integer(psb_lpk_), allocatable, intent(out) :: ilaggr(:),nlaggr(:)
   type(psb_@LX@spmat_type), intent(out)  :: t_prol
   integer(psb_ipk_), intent(out)      :: info
@@ -264,7 +264,7 @@ subroutine  amg_@X@_parmatch_aggregator_build_tprol(ag,parms,ag_data,&
     !
     if (debug) write(0,*) me,' Into matchbox_build_prol ',info
     if (do_timings) call psb_tic(idx_mboxp)
-    call @X@matchboxp_build_prol(tmpw,acv(i-1),desc_acv(i-1),ixaggr,nxaggr,tmp_prol,info,&
+    call amg_@X@_matchboxp_build_prol(tmpw,acv(i-1),desc_acv(i-1),ixaggr,nxaggr,tmp_prol,info,&
          & symmetrize=ag%need_symmetrize,reproducible=ag%reproducible_matching)
     if (do_timings) call psb_toc(idx_mboxp)
     if (debug) write(0,*) me,' Out from matchbox_build_prol ',info

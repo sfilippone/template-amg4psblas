@@ -45,7 +45,7 @@ subroutine amg_@X@precsetsm(p,val,info,ilev,ilmax,pos)
   implicit none
 
   ! Arguments
-  class(amg_@X@prec_type), intent(inout)         :: p
+  class(amg_@X@prec_type), target, intent(inout):: p
   class(amg_@X@_base_smoother_type), intent(in) :: val
   integer(psb_ipk_), intent(out)              :: info
   integer(psb_ipk_), optional, intent(in)     :: ilev,ilmax

@@ -106,9 +106,9 @@ module amg_@X@_matchboxp_mod
     module procedure amg_@X@_par_build_ahat
   end interface amg_par_build_ahat
 
-  interface PMatchBox
-    module procedure @X@PMatchBox
-  end interface PMatchBox
+  interface amg_PMatchBox
+    module procedure amg_@X@_PMatchBox
+  end interface amg_PMatchBox
 
 contains
 
@@ -692,7 +692,7 @@ contains
       !
       if (debug) write(0,*) iam,' buildmatching into PMatchBox:'
       if (do_timings) call psb_tic(idx_cmboxp)
-      call PMatchBox(nr,nz,vlptr,vlind,ewght,&
+      call amg_PMatchBox(nr,nz,vlptr,vlind,ewght,&
            & vnl, mate, iam, np,ictxt,&
            & msgis,msgas,msgprc,ph0t,ph1t,ph2t,ph1crd,ph2crd,info,display_inp)
       if (do_timings) call psb_toc(idx_cmboxp)
@@ -996,7 +996,7 @@ contains
 
   end subroutine amg_@X@_par_build_ahat
 
-  subroutine @X@PMatchBox(nlver,nledge,verlocptr,verlocind,edgelocweight,&
+  subroutine amg_@X@_PMatchBox(nlver,nledge,verlocptr,verlocind,edgelocweight,&
        & verdistance, mate, myrank, numprocs, ictxt,&
        & msgindsent,msgactualsent,msgpercent,&
        & ph0_time, ph1_time, ph2_time, ph1_card, ph2_card,info,display_inp)
@@ -1131,6 +1131,6 @@ contains
     end if
     where(mate>=0) mate = mate + 1
 
-  end subroutine @X@PMatchBox
+  end subroutine amg_@X@_PMatchBox
 
 end module amg_@X@_matchboxp_mod

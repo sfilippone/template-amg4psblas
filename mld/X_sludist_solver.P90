@@ -337,7 +337,6 @@ contains
     end if
     
     call acsr%free()
-    call atmp%free()
 
     if (debug_level >= psb_debug_outer_) &
          & write(debug_unit,*) me,' ',trim(name),' end'

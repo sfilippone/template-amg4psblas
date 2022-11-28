@@ -10,7 +10,8 @@ SRC=X_base_onelev_check.p90 X_base_onelev_descr.p90 X_base_onelev_dump.p90 \
     X_base_onelev_free.p90  X_base_onelev_csetc.P90 X_base_onelev_cseti.P90 \
     X_base_onelev_csetr.p90 X_base_onelev_cnv.p90 X_base_onelev_build.p90 \
     X_base_onelev_setsv.P90 X_base_onelev_setsm.P90 X_base_onelev_setag.p90 \
-    X_base_onelev_mat_asb.p90 X_base_onelev_map_prol.P90 X_base_onelev_map_rstr.P90
+    X_base_onelev_mat_asb.p90 X_base_onelev_map_prol.P90 X_base_onelev_map_rstr.P90 \
+    X_base_onelev_free_smoothers.p90 
 
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))

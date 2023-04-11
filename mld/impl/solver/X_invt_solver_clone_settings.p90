@@ -1,14 +1,15 @@
 !  
-!   
+!
 !                             AMG4PSBLAS version 1.0
-!    Algebraic Multigrid Package
-!               based on PSBLAS (Parallel Sparse BLAS version 3.7)
-!    
-!    (C) Copyright 2021 
-!  
-!        Salvatore Filippone  
-!        Pasqua D'Ambra   
-!        Fabio Durastante 
+!    MultiLevel Domain Decomposition Parallel Preconditioners Package
+!               based on PSBLAS (Parallel Sparse BLAS version 3.0)
+!
+!    (C) Copyright 2008,2009,2010,2010,2012
+!
+!                        Salvatore Filippone  University of Rome Tor Vergata
+!                        Alfredo Buttari      CNRS-IRIT, Toulouse
+!                        Pasqua D'Ambra       ICAR-CNR, Naples
+!                        Daniela di Serafino  Second University of Naples
 !
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
@@ -35,48 +36,50 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !
 !
-subroutine amg_@X@_invt_solver_descr(sv,info,iout,coarse,prefix)
+subroutine amg_@X@_invt_solver_clone_settings(sv,svout,info)
 
   use psb_base_mod
-  use amg_@X@_invt_solver, amg_protect_name => amg_@X@_invt_solver_descr
+  use amg_@X@_invt_solver, amg_protect_name => amg_@X@_invt_solver_clone_settings
 
   Implicit None
 
   ! Arguments
-  class(amg_@X@_invt_solver_type), intent(in) :: sv
-  integer(psb_ipk_), intent(out)            :: info
-  integer(psb_ipk_), intent(in), optional   :: iout
-  logical, intent(in), optional             :: coarse
-  character(len=*), intent(in), optional  :: prefix
-
+  class(amg_@X@_invt_solver_type), intent(inout)              :: sv
+  class(amg_@X@_base_solver_type), allocatable, intent(inout) :: svout
+  integer(psb_ipk_), intent(out)                            :: info
   ! Local variables
   integer(psb_ipk_) :: err_act
-  character(len=20), parameter :: name='amg_@X@_invt_solver_descr'
-  integer(psb_ipk_) :: iout_
-  character(1024)    :: prefix_
 
+
+  info=psb_success_
   call psb_erractionsave(err_act)
-  info = psb_success_
-  if (present(iout)) then
-    iout_ = iout
-  else
-    iout_ = 6
-  endif
-  if (present(prefix)) then
-    prefix_ = prefix
-  else
-    prefix_ = ""
-  end if
 
-  write(iout_,*) trim(prefix_), '  INVT Approximate Inverse with ILU(T,P) '
-  write(iout_,*) trim(prefix_), '  Fill level             :',sv%fill_in
-  write(iout_,*) trim(prefix_), '  Fill threshold         :',sv%thresh
-  write(iout_,*) trim(prefix_), '  Inverse fill level     :',sv%inv_fill
-  write(iout_,*) trim(prefix_), '  Inverse fill threshold :',sv%inv_thresh
+  if (allocated(svout)) then
+    call svout%free(info)
+    if (info == psb_success_) deallocate(svout, stat=info)
+  end if
+  if (info == psb_success_) &
+       & allocate(amg_@X@_invt_solver_type :: svout, stat=info)
+  if (info /= 0) then
+    info = psb_err_alloc_dealloc_
+    goto 9999
+  end if
+  select type(svo => svout)
+  type is (amg_@X@_invt_solver_type)
+    svo%fill_in    = sv%fill_in
+    svo%inv_fill   = sv%inv_fill
+    svo%thresh     = sv%thresh
+    svo%inv_thresh = sv%inv_thresh
+
+  class default
+    info = psb_err_internal_error_
+  end select
+
+  if (info /= 0) goto 9999
 
   call psb_erractionrestore(err_act)
   return
 
 9999 call psb_error_handler(err_act)
   return
-end subroutine amg_@X@_invt_solver_descr
+end subroutine amg_@X@_invt_solver_clone_settings

@@ -192,6 +192,7 @@ module amg_@X@_onelev_mod
     procedure, pass(lv) :: descr   => amg_@X@_base_onelev_descr
     procedure, pass(lv) :: default => @X@_base_onelev_default
     procedure, pass(lv) :: free    => amg_@X@_base_onelev_free
+    procedure, pass(lv) :: free_smoothers => amg_@X@_base_onelev_free_smoothers
     procedure, pass(lv) :: nullify => @X@_base_onelev_nullify
     procedure, pass(lv) :: check => amg_@X@_base_onelev_check
     procedure, pass(lv) :: dump  => amg_@X@_base_onelev_dump
@@ -260,7 +261,7 @@ module amg_@X@_onelev_mod
   end interface
 
   interface
-    subroutine amg_@X@_base_onelev_descr(lv,il,nl,ilmin,info,iout, verbosity)
+    subroutine amg_@X@_base_onelev_descr(lv,il,nl,ilmin,info,iout, verbosity,prefix)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
            & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
            & psb_ipk_, psb_epk_, psb_desc_type
@@ -271,6 +272,7 @@ module amg_@X@_onelev_mod
       integer(psb_ipk_), intent(out)          :: info
       integer(psb_ipk_), intent(in), optional :: iout
       integer(psb_ipk_), intent(in), optional :: verbosity
+      character(len=*), intent(in), optional  :: prefix
     end subroutine amg_@X@_base_onelev_descr
   end interface
 
@@ -287,7 +289,7 @@ module amg_@X@_onelev_mod
     end subroutine amg_@X@_base_onelev_cnv
   end interface
 
-interface
+  interface
     subroutine amg_@X@_base_onelev_free(lv,info)
       import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
            & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
@@ -297,6 +299,18 @@ interface
       class(amg_@X@_onelev_type), intent(inout) :: lv
       integer(psb_ipk_), intent(out)                :: info
     end subroutine amg_@X@_base_onelev_free
+  end interface
+
+  interface
+    subroutine amg_@X@_base_onelev_free_smoothers(lv,info)
+      import :: psb_@X@spmat_type, psb_@X@_vect_type, psb_@X@_base_vect_type, &
+           & psb_@X@linmap_type, @FKIND@, amg_@X@_onelev_type, &
+           & psb_ipk_, psb_epk_, psb_desc_type
+      implicit none
+
+      class(amg_@X@_onelev_type), intent(inout) :: lv
+      integer(psb_ipk_), intent(out)                :: info
+    end subroutine amg_@X@_base_onelev_free_smoothers
   end interface
 
   interface

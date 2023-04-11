@@ -135,7 +135,9 @@ module amg_@X@_prec_type
     procedure, pass(prec)               :: build        => amg_@X@precbld
     procedure, pass(prec)               :: hierarchy_build   => amg_@X@_hierarchy_bld
     procedure, pass(prec)               :: hierarchy_rebuild => amg_@X@_hierarchy_rebld
+    procedure, pass(prec)               :: hierarchy_free    => amg_@X@_hierarchy_free    
     procedure, pass(prec)               :: smoothers_build   => amg_@X@_smoothers_bld
+    procedure, pass(prec)               :: smoothers_free    => amg_@X@_smoothers_free
     procedure, pass(prec)               :: descr        =>  amg_@X@file_prec_descr
   end type amg_@X@prec_type
 
@@ -155,15 +157,16 @@ module amg_@X@_prec_type
 
 
   interface amg_precdescr
-    subroutine amg_@X@file_prec_descr(prec,info,iout,root,verbosity)
+    subroutine amg_@X@file_prec_descr(prec,info,iout,root,verbosity,prefix)
       import :: amg_@X@prec_type, psb_ipk_
       implicit none
       ! Arguments
-      class(amg_@X@prec_type), intent(in)      :: prec
-      integer(psb_ipk_), intent(out) :: info
+      class(amg_@X@prec_type), intent(in)     :: prec
+      integer(psb_ipk_), intent(out)          :: info
       integer(psb_ipk_), intent(in), optional :: iout
       integer(psb_ipk_), intent(in), optional :: root
       integer(psb_ipk_), intent(in), optional :: verbosity
+      character(len=*), intent(in), optional  :: prefix
     end subroutine amg_@X@file_prec_descr
   end interface
 
@@ -343,6 +346,14 @@ module amg_@X@_prec_type
       !      character, intent(in),optional             :: upd
     end subroutine amg_@X@_smoothers_bld
   end interface amg_smoothers_bld
+
+  interface amg_smoothers_free
+    module procedure  amg_@X@_smoothers_free
+  end interface amg_smoothers_free
+
+  interface amg_hierarchy_free
+    module procedure amg_@X@_hierarchy_free
+  end interface amg_hierarchy_free
 
 contains
   !
@@ -617,6 +628,68 @@ contains
 
   end subroutine amg_@X@_prec_free
 
+  subroutine amg_@X@_smoothers_free(prec,info)
+
+    implicit none
+
+    ! Arguments
+    class(amg_@X@prec_type), intent(inout) :: prec
+    integer(psb_ipk_), intent(out)        :: info
+
+    ! Local variables
+    integer(psb_ipk_)   :: me,err_act,i
+    character(len=20)   :: name
+
+    info=psb_success_
+    name = 'amg_@X@_smoothers_free'
+    call psb_erractionsave(err_act)
+    if (psb_errstatus_fatal()) then
+      info = psb_err_internal_error_; goto 9999
+    end if
+
+    if (allocated(prec%precv)) then
+      do i=1,size(prec%precv)
+        call prec%precv(i)%free_smoothers(info)
+      end do
+    end if
+
+    call psb_erractionrestore(err_act)
+    return
+
+9999 call psb_error_handler(err_act)
+    return
+
+  end subroutine amg_@X@_smoothers_free
+
+  subroutine amg_@X@_hierarchy_free(prec,info)
+
+    implicit none
+
+    ! Arguments
+    class(amg_@X@prec_type), intent(inout) :: prec
+    integer(psb_ipk_), intent(out)        :: info
+
+    ! Local variables
+    integer(psb_ipk_)   :: me,err_act,i
+    character(len=20)   :: name
+
+    info=psb_success_
+    name = 'amg_@X@_hierarchy_free'
+    call psb_erractionsave(err_act)
+    if (psb_errstatus_fatal()) then
+      info = psb_err_internal_error_; goto 9999
+    end if
+
+    me=-1
+    write(0,*) 'Missing implementation '
+
+    call psb_erractionrestore(err_act)
+    return
+
+9999 call psb_error_handler(err_act)
+    return
+
+  end subroutine amg_@X@_hierarchy_free
 
 
   !

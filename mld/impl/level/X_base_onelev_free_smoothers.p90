@@ -35,73 +35,26 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-subroutine amg_@X@_base_smoother_descr(sm,info,iout,coarse,prefix)
+subroutine amg_@X@_base_onelev_free_smoothers(lv,info)
   
   use psb_base_mod
-  use amg_@X@_base_smoother_mod, amg_protect_name =>  amg_@X@_base_smoother_descr
-  use amg_@X@_id_solver
-  Implicit None
+  use amg_@X@_onelev_mod, amg_protect_name =>  amg_@X@_base_onelev_free_smoothers
+  implicit none 
 
-  ! Arguments
-  class(amg_@X@_base_smoother_type), intent(in) :: sm
-  integer(psb_ipk_), intent(out)                :: info
-  integer(psb_ipk_), intent(in), optional       :: iout
-  logical, intent(in), optional                 :: coarse
-  character(len=*), intent(in), optional  :: prefix
+  class(amg_@X@_onelev_type), intent(inout) :: lv
+  integer(psb_ipk_), intent(out)          :: info
+  integer(psb_ipk_) :: i
 
-  ! Local variables
-  integer(psb_ipk_)   :: err_act
-  character(len=20), parameter :: name='amg_@X@_base_smoother_descr'
-  integer(psb_ipk_)   :: iout_
-  logical      :: coarse_
-  character(1024)    :: prefix_
-
-
-  call psb_erractionsave(err_act)
   info = psb_success_
 
-  if (present(coarse)) then 
-    coarse_ = coarse
-  else
-    coarse_ = .false.
-  end if
-  if (present(iout)) then 
-    iout_ = iout
-  else 
-    iout_ = psb_out_unit
-  end if
-  if (present(prefix)) then
-    prefix_ = prefix
-  else
-    prefix_ = ""
-  end if
+  ! We might just deallocate the top level array, except 
+  ! that there may be inner objects containing C pointers,
+  ! e.g.  UMFPACK, SLU or CUDA stuff.
+  ! We really need FINALs. 
+  if (allocated(lv%sm)) &
+       & call lv%sm%free(info)
 
-  if (coarse_) then 
-    if (allocated(sm%sv)) call sm%sv%descr(info,iout,coarse,prefix=prefix)
-  else
-    if (allocated(sm%sv)) then
-      select type (sv => sm%sv) 
-      class is (amg_@X@_id_solver_type)
-        write(iout_,*) trim(prefix_), 'No preconditioner/smoother'
-      class default
-        write(iout_,*) trim(prefix_), 'Decoupled preconditioner/smoother with local solver'
-        call sm%sv%descr(info,iout,coarse,prefix=prefix)
-      end select
-    else
-      write(iout_,*) trim(prefix_), 'No preconditioner/smoother'
-    end if
-  end if
-  
-  if (info /= psb_success_) then 
-    info = psb_err_from_subroutine_ 
-    call psb_errpush(info,name,a_err='Local solver')
-    goto 9999
-  end if
-  
-  call psb_erractionrestore(err_act)
-  return
+  if (allocated(lv%sm2a)) &
+       & call lv%sm2a%free(info)
 
-9999 call psb_error_handler(err_act)
-
-  return
-end subroutine amg_@X@_base_smoother_descr
+end subroutine amg_@X@_base_onelev_free_smoothers

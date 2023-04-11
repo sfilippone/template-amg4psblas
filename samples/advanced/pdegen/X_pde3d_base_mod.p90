@@ -64,7 +64,7 @@ contains
     b3=@RONE@/sqrt(3.0_@FKIND@)
   end function b3
   function c(x,y,z)
-    use psb_base_mod, only : @FKIND@, @RONE@
+    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
     @RTYPE@(@FKIND@) ::  c
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     c=@RZERO@

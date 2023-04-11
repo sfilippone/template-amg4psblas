@@ -52,6 +52,7 @@ module amg_@X@_invt_solver
   contains
     procedure, pass(sv) :: check   => amg_@X@_invt_solver_check
     procedure, pass(sv) :: clone   => amg_@X@_invt_solver_clone
+    procedure, pass(sv) :: clone_settings   => amg_@X@_invt_solver_clone_settings
     procedure, pass(sv) :: build   => amg_@X@_invt_solver_bld
     procedure, pass(sv) :: cseti   => amg_@X@_invt_solver_cseti
     procedure, pass(sv) :: csetr   => amg_@X@_invt_solver_csetr
@@ -71,6 +72,17 @@ module amg_@X@_invt_solver
       class(amg_@X@_base_solver_type), allocatable, intent(inout) :: svout
       integer(psb_ipk_), intent(out)                            :: info
     end subroutine amg_@X@_invt_solver_clone
+  end interface
+
+  interface
+    subroutine amg_@X@_invt_solver_clone_settings(sv,svout,info)
+      import :: psb_desc_type, psb_@X@spmat_type,  psb_@X@_base_sparse_mat, &
+       & amg_@X@_base_solver_type, @FKIND@, amg_@X@_invt_solver_type, psb_ipk_
+      Implicit None
+      class(amg_@X@_invt_solver_type), intent(inout)              :: sv
+      class(amg_@X@_base_solver_type), allocatable, intent(inout) :: svout
+      integer(psb_ipk_), intent(out)                            :: info
+    end subroutine amg_@X@_invt_solver_clone_settings
   end interface
 
   interface

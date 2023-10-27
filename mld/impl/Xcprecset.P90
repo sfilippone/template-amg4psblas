@@ -84,6 +84,7 @@ subroutine amg_@X@cprecseti(p,what,val,info,ilev,ilmax,pos,idx)
   use amg_@X@_diag_solver
   use amg_@X@_l1_diag_solver
   use amg_@X@_ilu_solver
+  use amg_@X@_jac_solver
   use amg_@X@_id_solver
   use amg_@X@_gs_solver
   use amg_@X@_ainv_solver
@@ -316,6 +317,7 @@ subroutine amg_@X@cprecsetc(p,what,string,info,ilev,ilmax,pos,idx)
   use amg_@X@_diag_solver
   use amg_@X@_l1_diag_solver
   use amg_@X@_ilu_solver
+  use amg_@X@_jac_solver
   use amg_@X@_id_solver
   use amg_@X@_gs_solver
   use amg_@X@_ainv_solver

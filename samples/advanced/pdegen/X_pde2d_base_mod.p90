@@ -46,37 +46,37 @@ contains
   ! functions parametrizing the differential equation
   !
   function b1(x,y)
-    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) :: b1
     @RTYPE@(@FKIND@), intent(in) :: x,y
     b1 = @RZERO@/1.414_@FKIND@
   end function b1
   function b2(x,y)
-    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  b2
     @RTYPE@(@FKIND@), intent(in) :: x,y
     b2 = @RZERO@/1.414_@FKIND@
   end function b2
   function c(x,y)
-    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  c
     @RTYPE@(@FKIND@), intent(in) :: x,y
     c = @RZERO@
   end function c
   function a1(x,y)
-    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  a1
     @RTYPE@(@FKIND@), intent(in) :: x,y
     a1=@RONE@*epsilon
   end function a1
   function a2(x,y)
-    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  a2
     @RTYPE@(@FKIND@), intent(in) :: x,y
     a2=@RONE@*epsilon
   end function a2
   function g(x,y)
-    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  g
     @RTYPE@(@FKIND@), intent(in) :: x,y
     g = @RZERO@

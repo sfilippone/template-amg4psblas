@@ -35,7 +35,7 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !
 module amg_@X@_pde3d_base_mod
-  use psb_base_mod, only : @FKIND@, @RONE@
+  use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
   @RTYPE@(@FKIND@), save, private :: epsilon=@RONE@/80
 contains
   subroutine pde_set_parm(dat)
@@ -46,49 +46,49 @@ contains
   ! functions parametrizing the differential equation
   !
   function b1(x,y,z)
-    use psb_base_mod, only : @FKIND@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) :: b1
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     b1=@RONE@/sqrt(3.0_@FKIND@)
   end function b1
   function b2(x,y,z)
-    use psb_base_mod, only : @FKIND@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  b2
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     b2=@RONE@/sqrt(3.0_@FKIND@)
   end function b2
   function b3(x,y,z)
-    use psb_base_mod, only : @FKIND@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  b3
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     b3=@RONE@/sqrt(3.0_@FKIND@)
   end function b3
   function c(x,y,z)
-    use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
+    implicit none 
     @RTYPE@(@FKIND@) ::  c
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     c=@RZERO@
   end function c
   function a1(x,y,z)
-    use psb_base_mod, only : @FKIND@
+    implicit none 
     @RTYPE@(@FKIND@) ::  a1
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     a1=epsilon
   end function a1
   function a2(x,y,z)
-    use psb_base_mod, only : @FKIND@
+    implicit none 
     @RTYPE@(@FKIND@) ::  a2
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     a2=epsilon
   end function a2
   function a3(x,y,z)
-    use psb_base_mod, only : @FKIND@
+    implicit none 
     @RTYPE@(@FKIND@) ::  a3
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     a3=epsilon
   end function a3
   function g(x,y,z)
-    use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
+    implicit none 
     @RTYPE@(@FKIND@) ::  g
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
     g = @RZERO@

@@ -14,14 +14,19 @@ SRC=X_prec_type.p90 X_prec_mod.p90 \
   X_krm_solver.p90  X_jac_solver.p90 \
   X_base_aggregator_mod.p90 \
   X_dec_aggregator_mod.p90 X_symdec_aggregator_mod.p90 \
-	X_ainv_solver.P90 X_base_ainv_mod.p90 X_invk_solver.p90 X_invt_solver.p90 \
-	X_matchboxp_mod.p90 X_parmatch_aggregator_mod.P90
+	X_ainv_solver.P90 X_base_ainv_mod.p90 X_invk_solver.p90 X_invt_solver.p90 
+
+
+RSRC= X_poly_smoother.p90 X_matchboxp_mod.p90 X_parmatch_aggregator_mod.P90
 
 
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
 FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))
 FSRC=$(FSRC1) $(FSRC2)
+FRSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(RSRC))))
+FRSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(RSRC))))
+FRSRC=$(FRSRC1) $(FRSRC2)
 FOBJS1=$(FSRC1:.f90=.o)
 FOBJS2=$(FSRC2:.F90=.o)
 FOBJS=$(FOBJS1) $(FOBJS2)
@@ -36,9 +41,9 @@ FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FIFLAG).
 
 src: ssingle sdouble scomplex sdcompl simpl
 ssingle:
-	$(MAKE) bsrc ARITH=s
+	$(MAKE) bsrc rsrc ARITH=s
 sdouble:
-	$(MAKE) bsrc ARITH=d
+	$(MAKE) bsrc rsrc ARITH=d
 scomplex:
 	$(MAKE) bsrc ARITH=c
 sdcompl:
@@ -70,6 +75,7 @@ dcompl:
 
 
 bsrc: $(FSRC)
+rsrc: $(FRSRC)
 
 lib: $(FOBJS)
 
@@ -83,9 +89,13 @@ X_base_smoother_mod.p90: X_base_solver_mod.p90
 
 
 $(FSRC1): amg_$(ARITH)%.f90 : X%.p90
-	sed -f ../$(ARITH).sed $< >$@
+	sed -f $(TOP)/$(ARITH).sed $< >$@
 $(FSRC2): amg_$(ARITH)%.F90 : X%.P90
-	sed -f ../$(ARITH).sed $< >$@
+	sed -f $(TOP)/$(ARITH).sed $< >$@
+$(FRSRC1): amg_$(ARITH)%.f90 : X%.p90
+	sed -f $(TOP)/$(ARITH).sed $< >$@
+$(FRSRC2): amg_$(ARITH)%.F90 : X%.P90
+	sed -f $(TOP)/$(ARITH).sed $< >$@
 
 clean: iclean
 	/bin/rm -f *.f90 *.F90 *.o

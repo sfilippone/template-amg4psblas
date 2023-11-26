@@ -38,45 +38,45 @@ module amg_@X@_pde2d_exp_mod
   use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
   @RTYPE@(@FKIND@), save, private :: epsilon=@RONE@/80
 contains
-  subroutine pde_set_parm(dat)
+  subroutine pde_set_parm2d_exp(dat)
     @RTYPE@(@FKIND@), intent(in) :: dat
     epsilon = dat
-  end subroutine pde_set_parm
+  end subroutine pde_set_parm2d_exp
   !
   ! functions parametrizing the differential equation
   !
   function b1_exp(x,y)
-    use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
+    implicit none 
     @RTYPE@(@FKIND@) :: b1_exp
     @RTYPE@(@FKIND@), intent(in) :: x,y
     b1_exp = @RZERO@
   end function b1_exp
   function b2_exp(x,y)
-    use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
+    implicit none 
     @RTYPE@(@FKIND@) ::  b2_exp
     @RTYPE@(@FKIND@), intent(in) :: x,y
     b2_exp = @RZERO@
   end function b2_exp
   function c_exp(x,y)
-    use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
+    implicit none 
     @RTYPE@(@FKIND@) ::  c_exp
     @RTYPE@(@FKIND@), intent(in) :: x,y
     c_exp = @RZERO@
   end function c_exp
   function a1_exp(x,y)
-    use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
+    implicit none 
     @RTYPE@(@FKIND@) ::  a1_exp
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    a1=@RONE@*epsilon*exp(-(x+y))
+    a1_exp=@RONE@*epsilon*exp(-(x+y))
   end function a1_exp
   function a2_exp(x,y)
-    use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
+    implicit none 
     @RTYPE@(@FKIND@) ::  a2_exp
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    a2=@RONE@*epsilon*exp(-(x+y))
+    a2_exp=@RONE@*epsilon*exp(-(x+y))
   end function a2_exp
   function g_exp(x,y)
-    use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
+    implicit none 
     @RTYPE@(@FKIND@) ::  g_exp
     @RTYPE@(@FKIND@), intent(in) :: x,y
     g_exp = @RZERO@

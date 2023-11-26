@@ -26,6 +26,11 @@ SRC=X_base_solver_apply.p90 X_base_solver_apply_vect.p90 \
     X_ainv_solver_bld.p90 X_ainv_solver_check.p90 X_ainv_solver_clone.p90 \
     X_ainv_solver_csetc.p90 X_ainv_solver_cseti.p90 X_ainv_solver_csetr.p90 \
     X_ainv_solver_descr.p90 X_ainv_solver_clone_settings.p90  \
+    X_jac_solver_apply.p90 \
+    X_jac_solver_apply_vect.p90 \
+    X_jac_solver_dmp.p90 X_jac_solver_clone.p90 X_jac_solver_cnv.p90 \
+    X_jac_solver_clear_data.p90 X_jac_solver_clone_settings.p90 \
+    X_jac_solver_bld.p90 X_l1_jac_solver_bld.p90 \
     X_krm_solver_impl.p90 \
     X_base_ainv_solver_apply_vect.p90 X_base_ainv_solver_apply.p90 \
     X_base_ainv_solver_cnv.p90 X_base_ainv_solver_dmp.p90 \
@@ -35,6 +40,7 @@ SRC=X_base_solver_apply.p90 X_base_solver_apply_vect.p90 \
     X_invt_solver_bld.p90 X_invt_solver_check.p90 X_invt_solver_clone.p90 \
     X_invt_solver_cseti.p90 X_invt_solver_descr.p90 X_invt_solver_clone_settings.p90 \
     X_invt_solver_csetr.p90 
+
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))
 FSRC2=$(patsubst %.P90, %.F90, $(subst X, amg_$(ARITH), $(filter %.P90, $(SRC))))

@@ -35,79 +35,33 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
 !  
-subroutine amg_@X@_bwgs_solver_bld(a,desc_a,sv,info,b,amold,vmold,imold)
+subroutine amg_@X@_jac_solver_cnv(sv,info,amold,vmold,imold)
 
   use psb_base_mod
-  use amg_@X@_gs_solver, amg_protect_name => amg_@X@_bwgs_solver_bld
+  use amg_@X@_jac_solver, amg_protect_name => amg_@X@_jac_solver_cnv
 
   Implicit None
 
   ! Arguments
-  type(psb_@X@spmat_type), intent(in), target           :: a
-  Type(psb_desc_type), Intent(inout)                  :: desc_a 
-  class(amg_@X@_bwgs_solver_type), intent(inout)         :: sv
-  integer(psb_ipk_), intent(out)                      :: info
-  type(psb_@X@spmat_type), intent(in), target, optional :: b
+  class(amg_@X@_jac_solver_type), intent(inout)         :: sv
+  integer(psb_ipk_), intent(out)                        :: info
   class(psb_@X@_base_sparse_mat), intent(in), optional  :: amold
   class(psb_@X@_base_vect_type), intent(in), optional   :: vmold
-  class(psb_i_base_vect_type), intent(in), optional   :: imold
+  class(psb_i_base_vect_type), intent(in), optional  :: imold
   ! Local variables
-  integer(psb_ipk_)   :: n_row,n_col, nrow_a, nztota
-  type(psb_ctxt_type) :: ctxt
-  integer(psb_ipk_)   :: np, me, i, err_act, debug_unit, debug_level
-  character(len=20)   :: name='d_bwgs_solver_bld', ch_err
-  integer(psb_ipk_), save :: idx_tril=-1
-  logical, parameter      :: do_timings=.true.
+  integer(psb_ipk_) :: err_act, debug_unit, debug_level
+  character(len=20) :: name='@X@_jac_solver_cnv', ch_err
 
   info=psb_success_
   call psb_erractionsave(err_act)
   debug_unit  = psb_get_debug_unit()
   debug_level = psb_get_debug_level()
-  ctxt       = desc_a%get_context()
-  call psb_info(ctxt, me, np)
-  if (debug_level >= psb_debug_outer_) &
-       & write(debug_unit,*) me,' ',trim(name),' start'
-  if ((do_timings).and.(idx_tril==-1))       &
-       & idx_tril = psb_get_timer_idx("BWGS_BLD: tril")
 
-
-  n_row  = desc_a%get_local_rows()
-
-  nrow_a = a%get_nrows()
-  nztota = a%get_nzeros()
-
-  if (sv%eps <= dzero) then
-    !
-    ! This cuts out the off-diagonal part, because it's supposed to
-    ! be handled by the outer Jacobi smoother.
-    !
-    !write(0,*) 'Calling A%TRIL in bwgs_solver_bld'
-    if (do_timings) call psb_tic(idx_tril)
-    call a%tril(sv%l,info,diag=-ione,jmax=nrow_a,u=sv%u)     
-    if (do_timings) call psb_toc(idx_tril)
-
-  else
-
-    info = psb_err_missing_override_method_
-    call psb_errpush(info,name)
-    goto 9999       
-  end if
-
-
-
-  call sv%l%set_asb()
-  call sv%l%trim()
-  call sv%u%set_asb()
-  call sv%u%trim()
-
-  if (present(amold)) then 
-    call sv%l%cscnv(info,mold=amold)
-    call sv%u%cscnv(info,mold=amold)
-  end if
-
+  if (present(amold)) call sv%a%cscnv(info,mold=amold)
+  if ((info==0).and.present(vmold)) call sv%dv%cnv(mold=vmold)
 
   if (debug_level >= psb_debug_outer_) &
-       & write(debug_unit,*) me,' ',trim(name),' end'
+       & write(debug_unit,*) trim(name),' end'
 
   call psb_erractionrestore(err_act)
   return
@@ -115,4 +69,4 @@ subroutine amg_@X@_bwgs_solver_bld(a,desc_a,sv,info,b,amold,vmold,imold)
 9999 call psb_error_handler(err_act)
 
   return
-end subroutine amg_@X@_bwgs_solver_bld
+end subroutine amg_@X@_jac_solver_cnv

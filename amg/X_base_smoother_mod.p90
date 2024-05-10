@@ -237,7 +237,7 @@ module amg_@X@_base_smoother_mod
            & psb_@X@_vect_type, psb_@X@_base_vect_type, @FKIND@, &
            & amg_@X@_base_smoother_type, psb_ipk_, psb_i_base_vect_type
       ! Arguments
-      type(psb_@X@spmat_type), intent(in), target     :: a
+      type(psb_@X@spmat_type), intent(inout), target  :: a
       Type(psb_desc_type), Intent(inout)              :: desc_a 
       class(amg_@X@_base_smoother_type), intent(inout) :: sm 
       integer(psb_ipk_), intent(out)                  :: info

@@ -10,7 +10,7 @@ MODULES=$(BASIC_MODS) $(UTIL_MODS)
 SRC=Xmlprec_bld.p90 Xmlprec_aply.p90 \
     Xprecbld.p90 Xprecaply.p90 Xfile_prec_descr.p90 \
     Xprecinit.P90 Xprecset.P90 Xcprecset.P90 \
-    X_extprol_bld.P90 X_hierarchy_bld.p90 \
+    X_extprol_bld.P90 X_hierarchy_bld.P90 \
     X_hierarchy_rebld.p90 X_smoothers_bld.p90  Xfile_prec_memory_use.p90
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))

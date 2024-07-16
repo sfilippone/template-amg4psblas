@@ -42,11 +42,12 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
   use amg_@X@_base_aggregator_mod
   use amg_@X@_dec_aggregator_mod
   use amg_@X@_symdec_aggregator_mod
+  @NOTCPLXS@
 #if !defined(SERIAL_MPI)
-@NOTCPLXS@
   use amg_@X@_parmatch_aggregator_mod
-@NOTCPLXE@
 #endif
+  use amg_@X@_poly_smoother
+  @NOTCPLXE@
   use amg_@X@_jac_smoother
   use amg_@X@_as_smoother
   use amg_@X@_diag_solver
@@ -101,6 +102,9 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
   type(amg_@X@_ainv_solver_type)     ::  amg_@X@_ainv_solver_mold
   type(amg_@X@_invk_solver_type)     ::  amg_@X@_invk_solver_mold
   type(amg_@X@_invt_solver_type)     ::  amg_@X@_invt_solver_mold
+@NOTCPLXS@
+  type(amg_@X@_poly_smoother_type)   ::  amg_@X@_poly_smoother_mold
+@NOTCPLXE@
 @DPKS@
 #if defined(HAVE_UMF_)
   type(amg_@X@_umf_solver_type)     ::  amg_@X@_umf_solver_mold
@@ -164,6 +168,11 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
       call lv%set(amg_@X@_as_smoother_mold,info,pos=pos)
       if (info == 0) call lv%set(amg_@X@_ilu_solver_mold,info,pos=pos)
 
+@NOTCPLXS@
+    case ('POLY')
+      call lv%set(amg_@X@_poly_smoother_mold,info,pos=pos)
+      if (info == 0) call lv%set(amg_@X@_l1_diag_solver_mold,info,pos=pos)
+@NOTCPLXE@
     case ('GS','FWGS')
       call lv%set(amg_@X@_jac_smoother_mold,info,pos='pre')
       if (info == 0) call lv%set(amg_@X@_gs_solver_mold,info,pos='pre')
@@ -209,16 +218,11 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
     case ('NONE','NOPREC','FACT_NONE')
       call lv%set(amg_@X@_id_solver_mold,info,pos=pos)
 
-    case ('DIAG')
+    case ('DIAG','JACOBI')
       call lv%set(amg_@X@_diag_solver_mold,info,pos=pos)
 
-    case ('JACOBI')
-      call lv%set(amg_@X@_jac_solver_mold,info,pos=pos)
-
-    case ('L1-DIAG')
+    case ('L1-DIAG','L1-JACOBI')
       call lv%set(amg_@X@_l1_diag_solver_mold,info,pos=pos)
-    case ('L1-JACOBI')
-      call lv%set(amg_@X@_l1_jac_solver_mold,info,pos=pos)
 
     case ('GS','FGS','FWGS')
       call lv%set(amg_@X@_gs_solver_mold,info,pos=pos)

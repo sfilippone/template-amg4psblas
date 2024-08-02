@@ -49,13 +49,13 @@ contains
     implicit none 
     @RTYPE@(@FKIND@) :: b1_base
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    b1_base=@RZERO@/sqrt(3.0_@FKIND@)
+    b1_base=@RONE@/sqrt(3.0_@FKIND@)
   end function b1_base
   function b2_base(x,y,z)
     implicit none 
     @RTYPE@(@FKIND@) ::  b2_base
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    b2_base=@RZERO@/sqrt(3.0_@FKIND@)
+    b2_base=@RONE@/sqrt(3.0_@FKIND@)
   end function b2_base
   function b3_base(x,y,z)
     implicit none 

@@ -34,56 +34,56 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !
-module amg_@X@_pde2d_base_mod
+module amg_@X@_pde2d_poisson_mod
   use psb_base_mod, only : @FKIND@, @RZERO@, @RONE@
   @RTYPE@(@FKIND@), save, private :: epsilon=@RONE@/80
 contains
-  subroutine pde_set_parm2d_base(dat)
+  subroutine pde_set_parm2d_poisson(dat)
     @RTYPE@(@FKIND@), intent(in) :: dat
     epsilon = dat
-  end subroutine pde_set_parm2d_base
+  end subroutine pde_set_parm2d_poisson
   !
   ! functions parametrizing the differential equation
   !
-  function b1_base(x,y)
+  function b1_poisson(x,y)
     implicit none 
-    @RTYPE@(@FKIND@) :: b1_base
+    @RTYPE@(@FKIND@) :: b1_poisson
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    b1_base = @RZERO@/1.414_@FKIND@
-  end function b1_base
-  function b2_base(x,y)
+    b1_poisson = @RZERO@
+  end function b1_poisson
+  function b2_poisson(x,y)
     implicit none 
-    @RTYPE@(@FKIND@) ::  b2_base
+    @RTYPE@(@FKIND@) ::  b2_poisson
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    b2_base = @RZERO@/1.414_@FKIND@
-  end function b2_base
-  function c_base(x,y)
+    b2_poisson = @RZERO@
+  end function b2_poisson
+  function c_poisson(x,y)
     implicit none 
-    @RTYPE@(@FKIND@) ::  c_base
+    @RTYPE@(@FKIND@) ::  c_poisson
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    c_base = @RZERO@
-  end function c_base
-  function a1_base(x,y)
+    c_poisson = @RZERO@
+  end function c_poisson
+  function a1_poisson(x,y)
     implicit none 
-    @RTYPE@(@FKIND@) ::  a1_base
+    @RTYPE@(@FKIND@) ::  a1_poisson
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    a1_base=@RONE@*epsilon
-  end function a1_base
-  function a2_base(x,y)
+    a1_poisson=@RONE@*epsilon
+  end function a1_poisson
+  function a2_poisson(x,y)
     implicit none 
-    @RTYPE@(@FKIND@) ::  a2_base
+    @RTYPE@(@FKIND@) ::  a2_poisson
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    a2_base=@RONE@*epsilon
-  end function a2_base
-  function g_base(x,y)
+    a2_poisson=@RONE@*epsilon
+  end function a2_poisson
+  function g_poisson(x,y)
     implicit none 
-    @RTYPE@(@FKIND@) ::  g_base
+    @RTYPE@(@FKIND@) ::  g_poisson
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    g_base = @RZERO@
+    g_poisson = @RZERO@
     if (x == @RONE@) then
-      g_base = @RONE@
+      g_poisson = @RONE@
     else if (x == @RZERO@) then
-      g_base = @RONE@
+      g_poisson = @RONE@
     end if
-  end function g_base
-end module amg_@X@_pde2d_base_mod
+  end function g_poisson
+end module amg_@X@_pde2d_poisson_mod

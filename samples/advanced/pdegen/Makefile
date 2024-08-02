@@ -6,11 +6,9 @@ UTIL_MODS =
 
 MODULES=$(BASIC_MODS) $(UTIL_MODS)
 
-SRC=X_pde2d.P90 \
-	X_pde3d.P90 X_genpde_mod.P90 \
+SRC=X_pde2d.P90 X_pde3d.P90 X_genpde_mod.P90 \
 	X_pde3d_exp_mod.p90 X_pde3d_gauss_mod.p90 X_pde3d_box_mod.p90  \
 	X_pde2d_exp_mod.p90 X_pde2d_gauss_mod.p90 X_pde2d_box_mod.p90 \
-	X_pde3d_const_mod.p90 X_pde2d_const_mod.p90 \
 	X_pde3d_poisson_mod.p90 X_pde2d_poisson_mod.p90 
 
 FSRC1=$(patsubst %.p90, %.f90, $(subst X, amg_$(ARITH), $(filter %.p90, $(SRC))))

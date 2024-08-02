@@ -49,7 +49,7 @@ contains
     implicit none 
     @RTYPE@(@FKIND@) :: b1_const
     @RTYPE@(@FKIND@), intent(in) :: x,y
-    b1_const = @ROONE@/1.414_@FKIND@
+    b1_const = @RONE@/1.414_@FKIND@
   end function b1_const
   function b2_const(x,y)
     implicit none 

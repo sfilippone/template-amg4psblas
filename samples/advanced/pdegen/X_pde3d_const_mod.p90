@@ -34,68 +34,68 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !
-module amg_@X@_pde3d_base_mod
+module amg_@X@_pde3d_const_mod
   use psb_base_mod, only : @FKIND@, @RONE@, @RZERO@
   @RTYPE@(@FKIND@), save, private :: epsilon=@RONE@/80
 contains
-  subroutine pde_set_parm3d_base(dat)
+  subroutine pde_set_parm3d_const(dat)
     @RTYPE@(@FKIND@), intent(in) :: dat
     epsilon = dat
-  end subroutine pde_set_parm3d_base
+  end subroutine pde_set_parm3d_const
   !
   ! functions parametrizing the differential equation
   !
-  function b1_base(x,y,z)
+  function b1_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) :: b1_base
+    @RTYPE@(@FKIND@) :: b1_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    b1_base=@RONE@/sqrt(3.0_@FKIND@)
-  end function b1_base
-  function b2_base(x,y,z)
+    b1_const=@RONE@/sqrt(3.0_@FKIND@)
+  end function b1_const
+  function b2_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) ::  b2_base
+    @RTYPE@(@FKIND@) ::  b2_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    b2_base=@RONE@/sqrt(3.0_@FKIND@)
-  end function b2_base
-  function b3_base(x,y,z)
+    b2_const=@RONE@/sqrt(3.0_@FKIND@)
+  end function b2_const
+  function b3_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) ::  b3_base
+    @RTYPE@(@FKIND@) ::  b3_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    b3_base=@RZERO@/sqrt(3.0_@FKIND@)
-  end function b3_base
-  function c_base(x,y,z)
+    b3_const=@RZERO@/sqrt(3.0_@FKIND@)
+  end function b3_const
+  function c_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) ::  c_base
+    @RTYPE@(@FKIND@) ::  c_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    c_base=@RZERO@
-  end function c_base
-  function a1_base(x,y,z)
+    c_const=@RZERO@
+  end function c_const
+  function a1_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) ::  a1_base
+    @RTYPE@(@FKIND@) ::  a1_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    a1_base=epsilon
-  end function a1_base
-  function a2_base(x,y,z)
+    a1_const=epsilon
+  end function a1_const
+  function a2_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) ::  a2_base
+    @RTYPE@(@FKIND@) ::  a2_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    a2_base=epsilon
-  end function a2_base
-  function a3_base(x,y,z)
+    a2_const=epsilon
+  end function a2_const
+  function a3_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) ::  a3_base
+    @RTYPE@(@FKIND@) ::  a3_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    a3_base=epsilon
-  end function a3_base
-  function g_base(x,y,z)
+    a3_const=epsilon
+  end function a3_const
+  function g_const(x,y,z)
     implicit none 
-    @RTYPE@(@FKIND@) ::  g_base
+    @RTYPE@(@FKIND@) ::  g_const
     @RTYPE@(@FKIND@), intent(in) :: x,y,z
-    g_base = @RZERO@
+    g_const = @RZERO@
     if (x == @RONE@) then
-      g_base = @RONE@
+      g_const = @RONE@
     else if (x == @RZERO@) then
-      g_base = @RONE@
+      g_const = @RONE@
     end if
-  end function g_base
-end module amg_@X@_pde3d_base_mod
+  end function g_const
+end module amg_@X@_pde3d_const_mod

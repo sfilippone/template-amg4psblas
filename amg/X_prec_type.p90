@@ -113,6 +113,7 @@ module amg_@X@_prec_type
     procedure, pass(prec)               :: free           => amg_@X@_prec_free
     procedure, pass(prec)               :: allocate_wrk   => amg_@X@_allocate_wrk
     procedure, pass(prec)               :: free_wrk       => amg_@X@_free_wrk
+    procedure, pass(prec)               :: deallocate_wrk => amg_@X@_free_wrk
     procedure, pass(prec)               :: is_allocated_wrk => amg_@X@_is_allocated_wrk
     procedure, pass(prec)               :: get_complexity => amg_@X@_get_compl
     procedure, pass(prec)               :: cmp_complexity => amg_@X@_cmp_compl

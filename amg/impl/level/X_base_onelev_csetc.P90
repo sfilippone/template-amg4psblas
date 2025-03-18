@@ -60,14 +60,14 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
   use amg_@X@_invk_solver
   use amg_@X@_invt_solver
 @DPKS@
-#if defined(PSB_HAVE_UMF)
+#if defined(AMG_HAVE_UMF)
   use amg_@X@_umf_solver
 #endif
-#if defined(PSB_HAVE_SLUDIST)
+#if defined(AMG_HAVE_SLUDIST)
   use amg_@X@_sludist_solver
 #endif
 @DPKE@
-#if defined(PSB_HAVE_SLU)
+#if defined(AMG_HAVE_SLU)
   use amg_@X@_slu_solver
 #endif
 #if defined(PSB_HAVE_MUMPS)
@@ -106,14 +106,14 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
   type(amg_@X@_poly_smoother_type)   ::  amg_@X@_poly_smoother_mold
 @NOTCPLXE@
 @DPKS@
-#if defined(PSB_HAVE_UMF)
+#if defined(AMG_HAVE_UMF)
   type(amg_@X@_umf_solver_type)     ::  amg_@X@_umf_solver_mold
 #endif
-#if defined(PSB_HAVE_SLUDIST)
+#if defined(AMG_HAVE_SLUDIST)
   type(amg_@X@_sludist_solver_type) ::  amg_@X@_sludist_solver_mold
 #endif
 @DPKE@
-#if defined(PSB_HAVE_SLU)
+#if defined(AMG_HAVE_SLU)
   type(amg_@X@_slu_solver_type)   ::  amg_@X@_slu_solver_mold
 #endif
 #if defined(PSB_HAVE_MUMPS)
@@ -246,7 +246,7 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
           if (allocated(lv%sm2a)) call lv%sm2a%sv%set('SUB_SOLVE',val,info)
         end if
       end if
-#ifdef PSB_HAVE_SLU
+#ifdef AMG_HAVE_SLU
     case ('SLU')
       call lv%set(amg_@X@_slu_solver_mold,info,pos=pos)
 #endif
@@ -255,11 +255,11 @@ subroutine amg_@X@_base_onelev_csetc(lv,what,val,info,pos,idx)
       call lv%set(amg_@X@_mumps_solver_mold,info,pos=pos)
 #endif
 @DPKS@
-#ifdef PSB_HAVE_SLUDIST
+#ifdef AMG_HAVE_SLUDIST
     case ('SLUDIST')
       call lv%set(amg_@X@_sludist_solver_mold,info,pos=pos)
 #endif
-#ifdef PSB_HAVE_UMF
+#ifdef AMG_HAVE_UMF
     case ('UMF')
       call lv%set(amg_@X@_umf_solver_mold,info,pos=pos)
 #endif

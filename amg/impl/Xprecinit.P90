@@ -103,11 +103,11 @@ subroutine amg_@X@precinit(ctxt,prec,ptype,info)
 @NOTCPLXE@
 
 @DPKS@
-#if defined(PSB_HAVE_UMF)
+#if defined(AMG_HAVE_UMF)
   use amg_@X@_umf_solver
 #endif
 @DPKE@
-#if defined(PSB_HAVE_SLU)
+#if defined(AMG_HAVE_SLU)
   use amg_@X@_slu_solver
 #endif
 
@@ -249,17 +249,17 @@ subroutine amg_@X@precinit(ctxt,prec,ptype,info)
     call prec%set('ML_CYCLE','VCYCLE',info)
     call prec%set('SMOOTHER_TYPE','FBGS',info)
 @DPKS@
-#if defined(PSB_HAVE_UMF)
+#if defined(AMG_HAVE_UMF)
     call prec%set('COARSE_SOLVE','UMF',info)
 #elif defined(PSB_HAVE_MUMPS)
     call prec%set('COARSE_SOLVE','MUMPS',info)
-#elif defined(PSB_HAVE_SLU)
+#elif defined(AMG_HAVE_SLU)
     call prec%set('COARSE_SOLVE','SLU',info)
 @DPKE@
 @SPKS@
 #if  defined(PSB_HAVE_MUMPS)
     call prec%set('COARSE_SOLVE','MUMPS',info)
-#elif defined(PSB_HAVE_SLU)
+#elif defined(AMG_HAVE_SLU)
     call prec%set('COARSE_SOLVE','SLU',info)
 @SPKE@
 #else

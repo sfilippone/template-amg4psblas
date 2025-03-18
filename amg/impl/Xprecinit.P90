@@ -251,13 +251,13 @@ subroutine amg_@X@precinit(ctxt,prec,ptype,info)
 @DPKS@
 #if defined(AMG_HAVE_UMF)
     call prec%set('COARSE_SOLVE','UMF',info)
-#elif defined(PSB_HAVE_MUMPS)
+#elif defined(AMG_HAVE_MUMPS)
     call prec%set('COARSE_SOLVE','MUMPS',info)
 #elif defined(AMG_HAVE_SLU)
     call prec%set('COARSE_SOLVE','SLU',info)
 @DPKE@
 @SPKS@
-#if  defined(PSB_HAVE_MUMPS)
+#if  defined(AMG_HAVE_MUMPS)
     call prec%set('COARSE_SOLVE','MUMPS',info)
 #elif defined(AMG_HAVE_SLU)
     call prec%set('COARSE_SOLVE','SLU',info)

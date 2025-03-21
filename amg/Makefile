@@ -17,7 +17,7 @@ SRC=X_prec_type.p90 X_prec_mod.p90 \
 	X_ainv_solver.P90 X_base_ainv_mod.p90 X_invk_solver.p90 X_invt_solver.p90 
 
 
-RSRC= X_poly_smoother.p90 X_matchboxp_mod.p90 X_parmatch_aggregator_mod.P90
+RSRC= X_poly_smoother.p90 X_matchboxp_mod.P90 X_parmatch_aggregator_mod.P90
 
 
 

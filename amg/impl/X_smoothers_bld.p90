@@ -81,7 +81,7 @@
 subroutine amg_@X@_smoothers_bld(a,desc_a,prec,info,amold,vmold,imold)
 
   use psb_base_mod
-  use amg_@X@_prec_type
+  use amg_@X@_prec_type, amg_protect_name => amg_@X@_smoothers_bld
 
   Implicit None
 

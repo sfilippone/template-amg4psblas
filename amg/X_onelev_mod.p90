@@ -157,6 +157,27 @@ module amg_@X@_onelev_mod
   private :: @X@_wrk_alloc, @X@_wrk_free, &
        & @X@_wrk_clone, @X@_wrk_move_alloc, @X@_wrk_cnv, @X@_wrk_sizeof
 
+  !
+  ! Remap.
+  !  This keeps track of remapping.
+  !  Logic here is as follows:
+  !  1. AC_PRE_REMAP  need to figure out if we
+  !                really need it.
+  !  2. DESC_AC_PRE_REMAP  contains the descriptor before
+  !                remapping. Meaning that it is possible
+  !                to implement the RESTRICTOR operator by
+  !                 a. Doing LINMAP_U2V onto this one
+  !                 b. For each process, send the data to
+  !                    IDEST.
+  !                This assumes that remapping goes by
+  !                a factor of 2.
+  !                For the PROLONGATOR operators, we first
+  !                use DESC_AC, then split and send onto
+  !                the processes in DESC_AC_PRE_REMAP.
+  !
+  ! To be fixed: what happens if NP the starting processes
+  ! is not an even number? Coordinate with _X_remap in PSBLAS
+  ! 
   type amg_@X@_remap_data_type
     type(psb_@X@spmat_type)          :: ac_pre_remap
     type(psb_desc_type)            :: desc_ac_pre_remap

@@ -98,6 +98,8 @@ subroutine amg_@X@_hierarchy_bld(a,desc_a,prec,info,cpymat)
   character(len=40)  :: ch_err
   integer(psb_ipk_), save  :: idx_bldtp=-1, idx_matasb=-1
   logical, parameter :: do_timings=.false.
+  type(psb_ctxt_type) :: lctxt
+  integer(psb_ipk_)   :: lme,lnp
 
   info=psb_success_
   err=0
@@ -309,7 +311,9 @@ subroutine amg_@X@_hierarchy_bld(a,desc_a,prec,info,cpymat)
     ! on all processes.
     !
     call psb_bcast(ctxt,prec%precv(i)%parms)
-
+    lctxt = prec%precv(i-1)%base_desc%get_ctxt()
+    call psb_info(lctxt,lme,lnp)
+    write(0,*) 'Check at level',i,lme,lnp
     !
     ! Sanity checks on the parameters
     !
@@ -441,7 +445,22 @@ subroutine amg_@X@_hierarchy_bld(a,desc_a,prec,info,cpymat)
       goto 9999
     endif
     if (i<iszv) call prec%precv(i)%update_aggr(prec%precv(i+1),info)
-
+    
+    if (i==3) then 
+      associate(lv=>prec%precv(i), rmp => prec%precv(i)%remap_data)
+        call lv%desc_ac%clone(rmp%desc_ac_pre_remap,info)
+        call lv%ac%clone(rmp%ac_pre_remap,info)
+        call psb_remap(np/2,rmp%desc_ac_pre_remap,rmp%ac_pre_remap,&
+             & rmp%idest,rmp%isrc,rmp%nrsrc,rmp%naggr,lv%desc_ac,lv%ac,info)
+!!$        write(0,*) me,' Out of remapping ',rmp%desc_ac_pre_remap%get_fmt(),' ',&
+!!$             & lv%desc_ac%get_fmt(),sum(lv%linmap%naggr),sum(rmp%naggr)
+        lv%linmap%naggr(:) =  rmp%naggr(:)
+        lv%linmap%p_desc_V => rmp%desc_ac_pre_remap
+        lv%base_a          => lv%ac
+        lv%base_desc       => lv%desc_ac
+      end associate
+    end if
+  
   end do array_build_loop
 
   if (newsz > 0) then

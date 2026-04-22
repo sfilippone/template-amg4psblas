@@ -67,7 +67,7 @@ module amg_@X@_inner_mod
   end interface amg_mlprec_bld
 
   interface amg_mlprec_aply
-    subroutine amg_@X@mlprec_aply(alpha,p,x,beta,y,desc_data,trans,work,info)
+    subroutine amg_@X@mlprec_aply_a(alpha,p,x,beta,y,desc_data,trans,work,info)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_
       import :: amg_@X@prec_type
       implicit none 
@@ -79,7 +79,7 @@ module amg_@X@_inner_mod
       character,intent(in)               :: trans
       @TYPE@(@FKIND@),target             :: work(:)
       integer(psb_ipk_), intent(out)     :: info
-    end subroutine amg_@X@mlprec_aply
+    end subroutine amg_@X@mlprec_aply_a
     subroutine amg_@X@mlprec_aply_vect(alpha,p,x,beta,y,desc_data,trans,work,info)
       import :: psb_@X@spmat_type, psb_desc_type, &
            & @FKIND@, psb_@X@_vect_type, psb_ipk_

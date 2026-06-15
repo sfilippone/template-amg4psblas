@@ -460,14 +460,13 @@ module amg_@X@_onelev_mod
       integer(psb_ipk_), intent(out) :: info
       @TYPE@(@FKIND@), optional       :: work(:)
     end subroutine amg_@X@_base_onelev_map_rstr_a
-    subroutine amg_@X@_base_onelev_map_rstr_v(lv,alpha,vect_u,beta,vect_v,info,work,vtx,vty)
+    subroutine amg_@X@_base_onelev_map_rstr_v(lv,alpha,vect_u,beta,vect_v,info,vtx,vty)
       import
       implicit none
       class(amg_@X@_onelev_type), target, intent(inout) :: lv
       @TYPE@(@FKIND@), intent(in)           :: alpha, beta
       type(psb_@X@_vect_type), intent(inout) :: vect_u, vect_v
       integer(psb_ipk_), intent(out)       :: info
-      @TYPE@(@FKIND@), optional          :: work(:)
       type(psb_@X@_vect_type), optional, target, intent(inout)  :: vtx,vty
     end subroutine amg_@X@_base_onelev_map_rstr_v
   end interface
@@ -484,14 +483,13 @@ module amg_@X@_onelev_mod
       @TYPE@(@FKIND@), optional          :: work(:)
 
     end subroutine amg_@X@_base_onelev_map_prol_a
-    subroutine amg_@X@_base_onelev_map_prol_v(lv,alpha,vect_v,beta,vect_u,info,work,vtx,vty)
+    subroutine amg_@X@_base_onelev_map_prol_v(lv,alpha,vect_v,beta,vect_u,info,vtx,vty)
       import
       implicit none
       class(amg_@X@_onelev_type), target, intent(inout) :: lv
       @TYPE@(@FKIND@), intent(in)           :: alpha, beta
       type(psb_@X@_vect_type), intent(inout) :: vect_u, vect_v
       integer(psb_ipk_), intent(out)       :: info
-      @TYPE@(@FKIND@), optional          :: work(:)
       type(psb_@X@_vect_type), optional, target, intent(inout)  :: vtx,vty
     end subroutine amg_@X@_base_onelev_map_prol_v
   end interface

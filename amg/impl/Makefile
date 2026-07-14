@@ -7,7 +7,7 @@ UTIL_MODS =
 
 MODULES=$(BASIC_MODS) $(UTIL_MODS)
 
-SRC=Xmlprec_bld.p90 Xmlprec_aply.p90 \
+SRC=Xmlprec_bld.p90 Xmlprec_aply.p90 Xmlprec_aply_a.p90 \
     Xprecbld.p90 Xprecaply.p90 Xfile_prec_descr.p90 \
     Xprecinit.P90 Xprecset.P90 Xcprecset.P90 \
     X_extprol_bld.P90 X_hierarchy_bld.P90 \

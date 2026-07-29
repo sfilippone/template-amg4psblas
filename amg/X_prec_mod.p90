@@ -43,7 +43,6 @@
 !  precision versions of the user-level AMG4PSBLAS routines.
 !
 module amg_@X@_prec_mod
-
   use amg_@X@_prec_type
   use amg_@X@_jac_smoother
   use amg_@X@_as_smoother
@@ -58,23 +57,21 @@ module amg_@X@_prec_mod
   use amg_@X@_krm_solver
 
   interface amg_extprol_bld
-    subroutine amg_@X@_extprol_bld(a,desc_a,p,prolv,restrv,info,amold,vmold,imold)
+    subroutine amg_@X@_extprol_bld(a, desc_a, p,prolv, restrv, info, amold, vmold, imold)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, &
-           & psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, &
-           & psb_i_base_vect_type, amg_@X@prec_type, psb_ipk_
-
+              & psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, &
+              & psb_i_base_vect_type, amg_@X@prec_type, psb_ipk_
       ! Arguments
-      type(psb_@X@spmat_type),intent(in), target           :: a
-      type(psb_@X@spmat_type),intent(inout), target        :: prolv(:)
-      type(psb_@X@spmat_type),intent(inout), target        :: restrv(:)
-      type(psb_desc_type), intent(inout), target         :: desc_a
-      type(amg_@X@prec_type),intent(inout),target          :: p
-      integer(psb_ipk_), intent(out)                       :: info
+      type(psb_@X@spmat_type), intent(in), target     :: a
+      type(psb_@X@spmat_type), intent(inout), target  :: prolv(:)
+      type(psb_@X@spmat_type), intent(inout), target  :: restrv(:)
+      type(psb_desc_type), intent(inout), target    :: desc_a
+      type(amg_@X@prec_type), intent(inout), target   :: p
+      integer(psb_ipk_), intent(out)                :: info
       class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
       class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
       class(psb_i_base_vect_type), intent(in), optional  :: imold
-      ! !$  character, intent(in), optional         :: upd
+      !!$  character, intent(in), optional                  :: upd
     end subroutine amg_@X@_extprol_bld
   end interface amg_extprol_bld
-
 end module amg_@X@_prec_mod

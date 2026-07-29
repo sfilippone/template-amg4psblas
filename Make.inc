@@ -1,1 +1,1 @@
-TARGET=../amg4psblas_spcg
+TARGET=../amg4psblas

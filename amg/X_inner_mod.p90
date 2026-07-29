@@ -44,22 +44,23 @@
 !
 module amg_@X@_inner_mod
 
-  use psb_base_mod, only : psb_@X@spmat_type, psb_desc_type, psb_i_base_vect_type, &
-       & @FKIND@, psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, psb_ipk_, &
-       & psb_@X@_vect_type, psb_lpk_, psb_@LX@spmat_type
+  use psb_base_mod, only : psb_@X@spmat_type, psb_@LX@spmat_type, psb_desc_type, &
+                          & psb_lpk_, @FKIND@, psb_ipk_, psb_@X@_vect_type, psb_@X@_multivect_type, &
+                          & psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, psb_i_base_vect_type
+
   use amg_@X@_prec_type, only : amg_@X@prec_type, amg_@RT@ml_parms, &
-       & amg_@X@_onelev_type, amg_@X@mlprec_wrk_type
+                              & amg_@X@_onelev_type, amg_@X@mlprec_wrk_type
 
   interface amg_mlprec_bld
-    subroutine amg_@X@mlprec_bld(a,desc_a,prec,info, amold, vmold,imold)
+    subroutine amg_@X@mlprec_bld(a, desc_a, prec, info, amold, vmold, imold)
       import :: psb_@X@spmat_type, psb_desc_type, psb_i_base_vect_type, &
            & @FKIND@, psb_@X@_base_sparse_mat, psb_@X@_base_vect_type, psb_ipk_
       import :: amg_@X@prec_type
       implicit none
-      type(psb_@X@spmat_type), intent(inout), target       :: a
-      type(psb_desc_type), intent(inout), target           :: desc_a
-      type(amg_@X@prec_type), intent(inout), target        :: prec
-      integer(psb_ipk_), intent(out)                       :: info
+      type(psb_@X@spmat_type), intent(inout), target  :: a
+      type(psb_desc_type), intent(inout), target    :: desc_a
+      type(amg_@X@prec_type), intent(inout), target   :: prec
+      integer(psb_ipk_), intent(out)                :: info
       class(psb_@X@_base_sparse_mat), intent(in), optional :: amold
       class(psb_@X@_base_vect_type), intent(in), optional  :: vmold
       class(psb_i_base_vect_type), intent(in), optional  :: imold
@@ -67,66 +68,100 @@ module amg_@X@_inner_mod
   end interface amg_mlprec_bld
 
   interface amg_mlprec_aply
-    subroutine amg_@X@mlprec_aply_a(alpha,p,x,beta,y,desc_data,trans,work,info)
+    subroutine amg_@X@mlprec_aply_a(alpha, p, x, beta, y, desc_data, trans, work, info)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_
       import :: amg_@X@prec_type
       implicit none 
-      type(psb_desc_type),intent(in)        :: desc_data
+      @TYPE@(@FKIND@), intent(in)          :: alpha, beta
       type(amg_@X@prec_type), intent(inout) :: p
-      @TYPE@(@FKIND@),intent(in)         :: alpha,beta
-      @TYPE@(@FKIND@),intent(inout)      :: x(:)
-      @TYPE@(@FKIND@),intent(inout)      :: y(:)
-      character,intent(in)               :: trans
-      @TYPE@(@FKIND@),target             :: work(:)
-      integer(psb_ipk_), intent(out)     :: info
+      @TYPE@(@FKIND@), intent(inout)       :: x(:)
+      @TYPE@(@FKIND@), intent(inout)       :: y(:)
+      type(psb_desc_type), intent(in)     :: desc_data
+      character, intent(in)               :: trans
+      @TYPE@(@FKIND@), target              :: work(:)
+      integer(psb_ipk_), intent(out)      :: info
     end subroutine amg_@X@mlprec_aply_a
-    subroutine amg_@X@mlprec_aply_vect(alpha,p,x,beta,y,desc_data,trans,work,info)
-      import :: psb_@X@spmat_type, psb_desc_type, &
-           & @FKIND@, psb_@X@_vect_type, psb_ipk_
+
+    subroutine amg_@X@mlprec_aply_vect(alpha, p, x, beta, y, desc_data, trans, work, info)
+      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_, &
+                & psb_@X@_vect_type, psb_@X@_multivect_type
       import :: amg_@X@prec_type
       implicit none 
-      type(psb_desc_type),intent(in)        :: desc_data
-      type(amg_@X@prec_type), intent(inout) :: p
-      @TYPE@(@FKIND@),intent(in)            :: alpha,beta
-      type(psb_@X@_vect_type),intent(inout) :: x
-      type(psb_@X@_vect_type),intent(inout) :: y
-      character,intent(in)                  :: trans
-      @TYPE@(@FKIND@),target                :: work(:)
+      @TYPE@(@FKIND@), intent(in)            :: alpha, beta
+      type(amg_@X@prec_type), intent(inout)   :: p
+      type(psb_@X@_vect_type), intent(inout)  :: x
+      type(psb_@X@_vect_type), intent(inout)  :: y
+      type(psb_desc_type), intent(in)       :: desc_data
+      character, intent(in)                 :: trans
+      @TYPE@(@FKIND@), target                :: work(:)
       integer(psb_ipk_), intent(out)        :: info
     end subroutine amg_@X@mlprec_aply_vect
+
+    subroutine amg_@X@mlprec_aply_mvect_vect(alpha, p, x, idx_x, beta, y, desc_data, trans, work, info)
+      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_, &
+                & psb_@X@_vect_type, psb_@X@_multivect_type
+      import :: amg_@X@prec_type
+      implicit none 
+      @TYPE@(@FKIND@), intent(in)                :: alpha, beta
+      type(amg_@X@prec_type), intent(inout)       :: p
+      type(psb_@X@_multivect_type), intent(inout) :: x
+      integer(psb_ipk_), intent(in)             :: idx_x
+      type(psb_@X@_vect_type), intent(inout)      :: y
+      type(psb_desc_type), intent(in)           :: desc_data
+      character, intent(in)                     :: trans
+      @TYPE@(@FKIND@), target                    :: work(:)
+      integer(psb_ipk_), intent(out)            :: info
+    end subroutine amg_@X@mlprec_aply_mvect_vect
+
+    subroutine amg_@X@mlprec_aply_mvect_col(alpha, p, x, idx_x, beta, y, idx_y, desc_data, trans, work, info)
+      import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_, &
+                & psb_@X@_vect_type, psb_@X@_multivect_type
+      import :: amg_@X@prec_type
+      implicit none 
+      @TYPE@(@FKIND@), intent(in)                :: alpha, beta
+      type(amg_@X@prec_type), intent(inout)       :: p
+      type(psb_@X@_multivect_type), intent(inout) :: x
+      integer(psb_ipk_), intent(in)             :: idx_x
+      type(psb_@X@_multivect_type), intent(inout) :: y
+      integer(psb_ipk_), intent(in)             :: idx_y
+      type(psb_desc_type), intent(in)           :: desc_data
+      character, intent(in)                     :: trans
+      @TYPE@(@FKIND@), target                    :: work(:)
+      integer(psb_ipk_), intent(out)            :: info
+    end subroutine amg_@X@mlprec_aply_mvect_col
   end interface amg_mlprec_aply
  
   interface amg_map_to_tprol
-    subroutine amg_@X@_map_to_tprol(desc_a,ilaggr,nlaggr,op_prol,info)
+    subroutine amg_@X@_map_to_tprol(desc_a, ilaggr, nlaggr, op_prol, info)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_, psb_lpk_, psb_@LX@spmat_type
       import :: amg_@X@_onelev_type
       implicit none 
       type(psb_desc_type), intent(in)     :: desc_a
-      integer(psb_lpk_), allocatable, intent(inout) :: ilaggr(:),nlaggr(:)
+      integer(psb_lpk_), allocatable, intent(inout) :: ilaggr(:), nlaggr(:)
       type(psb_@LX@spmat_type), intent(out)  :: op_prol
       integer(psb_ipk_), intent(out)      :: info
     end subroutine amg_@X@_map_to_tprol
   end interface amg_map_to_tprol
 
   abstract interface
-    subroutine amg_@X@aggrmat_var_bld(dol1smoothing,a,desc_a,ilaggr,nlaggr,parms,&
-         & ac,desc_ac,op_prol,op_restr,t_prol,info)
+    subroutine amg_@X@aggrmat_var_bld(dol1smoothing, a, desc_a, ilaggr, nlaggr, parms, &
+                                    & ac, desc_ac, op_prol, op_restr, t_prol, info)
       import :: psb_@X@spmat_type, psb_desc_type, @FKIND@, psb_ipk_, psb_lpk_, psb_@LX@spmat_type
-      import ::  amg_@X@_onelev_type, amg_@RT@ml_parms
+      import :: amg_@X@_onelev_type, amg_@RT@ml_parms
       implicit none 
-      integer(psb_ipk_), intent(in)               :: dol1smoothing
-      type(psb_@X@spmat_type), intent(in)         :: a
-      type(psb_desc_type), intent(inout)          :: desc_a
-      integer(psb_lpk_), intent(inout)            :: ilaggr(:), nlaggr(:)
-      type(amg_@RT@ml_parms), intent(inout)        :: parms 
-      type(psb_@X@spmat_type), intent(inout)     :: op_prol,ac,op_restr
-      type(psb_@LX@spmat_type), intent(inout)     :: t_prol
-      type(psb_desc_type), intent(inout)         :: desc_ac
-      integer(psb_ipk_), intent(out)             :: info
+      integer(psb_ipk_), intent(in)         :: dol1smoothing
+      type(psb_@X@spmat_type), intent(in)     :: a
+      type(psb_desc_type), intent(inout)    :: desc_a
+      integer(psb_lpk_), intent(inout)      :: ilaggr(:), nlaggr(:)
+      type(amg_@RT@ml_parms), intent(inout)    :: parms 
+      type(psb_@X@spmat_type), intent(inout)  :: op_prol, ac, op_restr
+      type(psb_@LX@spmat_type), intent(inout) :: t_prol
+      type(psb_desc_type), intent(inout)    :: desc_ac
+      integer(psb_ipk_), intent(out)        :: info
     end subroutine amg_@X@aggrmat_var_bld
   end interface
 
   procedure(amg_@X@aggrmat_var_bld) ::  amg_@X@aggrmat_nosmth_bld, &
-       & amg_@X@aggrmat_smth_bld, amg_@X@aggrmat_minnrg_bld
-
+                                      & amg_@X@aggrmat_smth_bld, &
+                                      & amg_@X@aggrmat_minnrg_bld
 end module amg_@X@_inner_mod

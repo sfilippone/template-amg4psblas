@@ -329,10 +329,9 @@ subroutine amg_@X@_extprol_bld(a,desc_a,p,prolv,restrv,info,amold,vmold,imold)
     goto 9999
   endif
 
-!!$  iszv = size(p%precv)
-  iszv = prec%get_nlevs()
-  call prec%cmp_complexity()
-  call prec%cmp_avg_cr()
+  iszv = p%get_nlevs()
+  call p%cmp_complexity()
+  call p%cmp_avg_cr()
   
   if (debug_level >= psb_debug_outer_) &
        & write(debug_unit,*) me,' ',trim(name),&

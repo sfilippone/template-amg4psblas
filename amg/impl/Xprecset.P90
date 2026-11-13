@@ -64,7 +64,7 @@ subroutine amg_@X@precsetsm(p,val,info,ilev,ilmax,pos)
          &' should call amg_PRECINIT'
     return 
   endif
-  nlev_ = size(p%precv)
+  nlev_ = p%get_nlevs()
 
   if (present(ilev)) then 
     ilev_ = ilev
@@ -127,7 +127,7 @@ subroutine amg_@X@precsetsv(p,val,info,ilev,ilmax,pos)
          &' should call amg_PRECINIT'
     return 
   endif
-  nlev_ = size(p%precv)
+  nlev_ = p%get_nlevs()
 
   if (present(ilev)) then 
     ilev_ = ilev
@@ -190,7 +190,7 @@ subroutine amg_@X@precsetag(p,val,info,ilev,ilmax,pos)
          &' should call amg_PRECINIT'
     return 
   endif
-  nlev_ = size(p%precv)
+  nlev_ = p%get_nlevs()
 
   if (present(ilev)) then 
     ilev_ = ilev

@@ -285,8 +285,8 @@ subroutine amg_@X@_extprol_bld(a,desc_a,p,prolv,restrv,info,amold,vmold,imold)
       call p%precv(i)%free(info)
     end do
     call move_alloc(tprecv,p%precv)
-    call prec%set_nlevs(nplevs)
-    iszv = prec%get_nlevs()
+    call p%set_nlevs(nplevs)
+    iszv = p%get_nlevs()
 !    iszv = size(p%precv)
   end if
   !
